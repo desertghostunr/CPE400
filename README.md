@@ -10,9 +10,15 @@ Class Device:
 	* Methods:
 
 		* Constructor
+		* Destructor
 		* Set Leave Time
 		* Compute Time elapsed
 		* Get Destination Address
+
+		* Request Route
+
+		* Set Route
+
 	* Properties:
 
 		* Device id
@@ -20,3 +26,24 @@ Class Device:
 		* Dest address
 		* Time leave node (UTC)
 
+		* Route (a list of subnets to traverse)
+
+## Central Compute Node
+The central compute node is responsible for routing all traffic.
+
+Class CentralComputeNode:
+
+	* Methods:
+
+		* Constructor
+		* Destructor
+		* Queue Job
+		* Compute Route
+		* Direct Traffic
+
+	* Properties:
+
+		* Vehicles at each subnet (map)
+		* Vehicles going to each subnet (map)
+		* City Map (adjacency matrix)
+		* Jobs (a queue of routes to be computed)
