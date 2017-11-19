@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <queue>
+#include "Vehicle.h"
 
 struct Job;
 
@@ -21,7 +22,11 @@ public:
 
     void directTraffic();
 
+    void joinNetwork(const Vehicle & vehicle, int id);
+
 private:
+
+    std::map<int, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
     std::map<int, std::list< int > > vehiclesAtSubnet; //a list of vehicles at each subnet
     std::map<int, std::list< int > > vechiclesGoingToSubnet; //a list of vehicles going to a given subnet
 

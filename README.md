@@ -19,6 +19,8 @@ Class Vehicle:
 
 		* Set Route
 
+		* Notify Road Change
+
 	* Properties:
 
 		* Device id
@@ -40,9 +42,11 @@ Class CentralComputeNode:
 		* Queue Job
 		* Compute Route
 		* Direct Traffic
+		* Join Network
 
 	* Properties:
 
+		* Vehicle ID to Vehicle Object (the abstracted "route" to that vehicle)
 		* Vehicles at each subnet (map)
 		* Vehicles going to each subnet (map)
 		* City Map (adjacency matrix)

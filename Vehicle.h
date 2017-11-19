@@ -17,6 +17,8 @@ class Vehicle
 		void requestRoute(const CentralComputeNode & ccn);
 		void setRoute(std::list<int> route);
 
+        void notifyRoadChange(const CentralComputeNode & cnn);
+
 	private:
 		int id;
 		int sourceAddress;
