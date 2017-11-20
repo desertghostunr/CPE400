@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdio>
 #include <thread>
+#include <atomic>
+#include <functional>
 #include <vector>
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
@@ -9,25 +11,30 @@
 //this runs the simulation to test our SDN protocol
 
 // initializes and runs the simulator in separate threads
-void RunSimulator(std::vector<std::thread> & simulatorThreads, CentralComputeNode & ccn); 
+void RunSimulator(std::vector<std::thread> & simulatorThreads, 
+                  CentralComputeNode & ccn, 
+                  std::atomic_bool & running); 
 
 // end the simulator by joining all threads
-void EndSimulator(std::vector<std::thread> & simulatorThreads);
+void EndSimulator(std::vector<std::thread> & simulatorThreads, 
+                  std::atomic_bool & running);
 
 //function that runs the compute node in another thread
 void WaitFor(double timeMS); 
 
 //function that runs the compute node in another thread
-void ComputeNode(CentralComputeNode& ccn); 
+void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running);
 
 //function that runs a car in another thread
-void Car(CentralComputeNode & ccn);
+void Car(CentralComputeNode & ccn, std::atomic_bool & running);
 
 
-int main() //todo: add command line params and take input and handle errors
+int main() //todo: add command line params, take input, and handle errors
 {
     CentralComputeNode ccn;
     std::vector<std::thread> simulatorThreads;
+
+    std::atomic_bool running = true;
 
     bool error = false;
 
@@ -48,7 +55,7 @@ int main() //todo: add command line params and take input and handle errors
 
     std::cout << "Starting the simulator." << std::endl << std::endl;
 
-    RunSimulator(simulatorThreads, ccn);
+    RunSimulator(simulatorThreads, ccn, std::ref(running));
 
     std::cout << "Press any key to end the simulator." << std::endl << std::endl;
 
@@ -57,7 +64,7 @@ int main() //todo: add command line params and take input and handle errors
     std::cout << "Terminating the simulator." << std::endl << std::endl;
 
     //after keyboard input end the simulator
-    EndSimulator(simulatorThreads);
+    EndSimulator(simulatorThreads, std::ref(running));
     
     std::cout << "Simulator terminated." << std::endl;
 
@@ -65,24 +72,25 @@ int main() //todo: add command line params and take input and handle errors
     return 0;
 }
 
-void RunSimulator(std::vector<std::thread> & simulatorThreads, CentralComputeNode & ccn)
+void RunSimulator(std::vector<std::thread> & simulatorThreads, CentralComputeNode & ccn, std::atomic_bool & running)
 {
     int index;
-    //todo: finish implementing
 
     //initialize and start the compute node
-
+    simulatorThreads[0] = std::thread(ComputeNode, ccn, std::ref(running));
 
     //initialize and start the cars
     for (index = 1; index < simulatorThreads.size(); index++)
     {
-        
+        simulatorThreads[index] = std::thread(Car, ccn, std::ref(running));
     }
 }
 
-void EndSimulator(std::vector<std::thread> & simulatorThreads)
+void EndSimulator(std::vector<std::thread> & simulatorThreads, std::atomic_bool & running)
 {
     int index;
+
+    running = false;
 
     for (index = 0; index < simulatorThreads.size(); index++) 
     {
