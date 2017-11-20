@@ -4,6 +4,14 @@
 #include <list>
 #include "CentralComputeNode.h"
 
+// we need to make this thread safe
+
+// maybe something like this? https://stackoverflow.com/questions/33895071/how-to-implement-class-lock-objects-for-multithreaded-access
+
+// the second one looks option in the solution might be better
+
+// I wish c++ had something as simple as lock(){} in c# ... 
+
 class Vehicle 
 {
 	public:

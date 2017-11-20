@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdio>
+#include <chrono>
 #include <thread>
 #include <atomic>
 #include <functional>
@@ -20,7 +21,7 @@ void EndSimulator(std::vector<std::thread> & simulatorThreads,
                   std::atomic_bool & running);
 
 //function that runs the compute node in another thread
-void WaitFor(double timeMS); 
+void WaitFor(long long timeMS); 
 
 //function that runs the compute node in another thread
 void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running);
@@ -98,7 +99,15 @@ void EndSimulator(std::vector<std::thread> & simulatorThreads, std::atomic_bool 
     }
 }
 
-void WaitFor(double timeMS)
+void WaitFor(long long timeMS)
 {
-    //to do implement
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeMS));
+}
+
+void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) 
+{
+    while (running) 
+    {
+
+    }
 }

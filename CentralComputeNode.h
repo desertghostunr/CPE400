@@ -1,6 +1,14 @@
 #ifndef CENTRALCOMPUTENODE_H
 #define CENTRALCOMPUTENODE_H
 
+// we need to make this thread safe
+
+//maybe this? https://stackoverflow.com/questions/33895071/how-to-implement-class-lock-objects-for-multithreaded-access
+
+// the second one looks option in the solution might be better
+
+// I wish c++ had something as simple as lock(){} in c# ...
+
 #include <vector>
 #include <list>
 #include <map>
