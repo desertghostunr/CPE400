@@ -1,6 +1,8 @@
 # CPE400
 A repository for the CPE400 Networking Programming Project
 
+***I think we should add a provision for when route messages might get lost based on a random probability. If possible we should also add a random delay to messages being delivered as well.
+
 ## Vehicles
 Each vehicle on the network is an abstraction of a network packet. This allows each one to hold and share only basic information, such as identification, source, and destination addresses. The majority of routing of these packets is therefore completed by the intersection routers. The amount of time spend between each node is recorded by the packet, which is then read by the router and passed to the central device. This information helps the Central Node determine wait times at each individual node; this in turn allows it to scale and reroute packets accordingly.
 
@@ -21,6 +23,10 @@ Class Vehicle:
 
 		* Notify Road Change
 
+		* Get Lock
+
+		* Release Lock
+
 	* Properties:
 
 		* Device id
@@ -29,6 +35,8 @@ Class Vehicle:
 		* Time leave node (UTC)
 
 		* Route (a list of subnets to traverse)
+
+		* mutex
 
 ## Central Compute Node
 The central compute node is responsible for routing all traffic.
@@ -43,6 +51,8 @@ Class CentralComputeNode:
 		* Compute Route
 		* Direct Traffic
 		* Join Network
+		* Get Lock
+		* Release Lock
 
 	* Properties:
 
@@ -51,3 +61,5 @@ Class CentralComputeNode:
 		* Vehicles going to each subnet (map)
 		* City Map (adjacency matrix)
 		* Jobs (a queue of routes to be computed)
+
+		* mutex

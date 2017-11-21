@@ -14,6 +14,8 @@
 
 class Vehicle 
 {
+    using Lock = std::unique_lock<std::mutex>;
+
 	public:
 		Vehicle();
     	~Vehicle();
@@ -27,6 +29,10 @@ class Vehicle
 
         void notifyRoadChange(const CentralComputeNode & cnn);
 
+        Lock getLock();
+
+        void releaseLock();
+
 	private:
 		int id;
 		int sourceAddress;
@@ -34,6 +40,8 @@ class Vehicle
 		int departTime;
 
 		std::list<int> route;
+
+        mutable std::mutex mutex;
 };
 
 #endif
