@@ -29,7 +29,11 @@ class Vehicle
 
         void notifyRoadChange(const CentralComputeNode & cnn);
 
-        Lock getLock();
+        bool onRoute();
+
+        bool hasRoute();
+
+        void getLock();
 
         void releaseLock();
 

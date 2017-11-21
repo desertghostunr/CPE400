@@ -34,7 +34,7 @@ public:
 
     void joinNetwork(const Vehicle & vehicle, int id);
 
-    Lock getLock();
+    void getLock();
 
     void releaseLock();
 

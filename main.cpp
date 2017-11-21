@@ -104,10 +104,41 @@ void WaitFor(long long timeMS)
     std::this_thread::sleep_for(std::chrono::milliseconds(timeMS));
 }
 
+
 void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) 
 {
     while (running) 
     {
+        ccn.getLock();
 
+        ccn.directTraffic();
+
+        ccn.releaseLock();
     }
 }
+
+void Car(CentralComputeNode & ccn, std::atomic_bool & running)
+{
+    Vehicle car;
+
+    while (running) 
+    {
+        car.getLock();
+
+        if (car.hasRoute())
+        {
+            //some logic for moving the car down a roadway
+        }
+        else 
+        {
+            //request a route
+            car.requestRoute(ccn);
+        }
+
+        car.releaseLock();
+
+        //might want to use a random time for the sake of collisions
+        WaitFor(300);
+    }
+}
+
