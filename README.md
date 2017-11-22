@@ -57,6 +57,8 @@ Class CentralComputeNode:
 	* Properties:
 
 		* Vehicle ID to Vehicle Object (the abstracted "route" to that vehicle)
+		* Subnet Speed
+		* Subnet Capacity
 		* Vehicles at each subnet (map)
 		* Vehicles going to each subnet (map)
 		* City Map (adjacency matrix)

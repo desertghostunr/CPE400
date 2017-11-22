@@ -41,10 +41,12 @@ public:
 private:
 
     std::map<int, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
+    std::map<int, double> subnetSpeed; //in m/s
+    std::map<int, int> subnetCapacity; // the number of cars that fit on a subnet
     std::map<int, std::list< int > > vehiclesAtSubnet; //a list of vehicles at each subnet
     std::map<int, std::list< int > > vechiclesGoingToSubnet; //a list of vehicles going to a given subnet
 
-    std::vector< std::vector< int > > subnetAdjacencyMatrix; //the map that defines the city
+    std::vector< std::vector< double > > subnetAdjacencyMatrix; //the map that defines the city
 
     std::queue<Job> jobs; //the jobs that have to be processed
 
