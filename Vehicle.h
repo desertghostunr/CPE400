@@ -2,6 +2,7 @@
 #define VEHICLE_H
 
 #include <list>
+#include "ThreadSafeObject.h"
 #include "CentralComputeNode.h"
 
 // we need to make this thread safe
@@ -12,10 +13,8 @@
 
 // I wish c++ had something as simple as lock(){} in c# ... 
 
-class Vehicle 
+class Vehicle : public ThreadSafeObject
 {
-    using Lock = std::unique_lock<std::mutex>;
-
 	public:
 		Vehicle();
     	~Vehicle();
@@ -33,10 +32,6 @@ class Vehicle
 
         bool hasRoute();
 
-        void getLock();
-
-        void releaseLock();
-
 	private:
 		int id;
 		int sourceAddress;
@@ -44,8 +39,6 @@ class Vehicle
 		int departTime;
 
 		std::list<int> route;
-
-        mutable std::mutex mutex;
 };
 
 #endif

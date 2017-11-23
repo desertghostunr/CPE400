@@ -12,15 +12,15 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <mutex>
 #include <queue>
 #include "Vehicle.h"
+#include "ThreadSafeObject.h"
 
 struct Job;
 
-class CentralComputeNode 
+class CentralComputeNode : public ThreadSafeObject
 {
-    using Lock = std::unique_lock<std::mutex>;
+    
 public:
     CentralComputeNode();
     ~CentralComputeNode();
@@ -34,10 +34,6 @@ public:
 
     void joinNetwork(const Vehicle & vehicle, int id);
 
-    void getLock();
-
-    void releaseLock();
-
 private:
 
     std::map<int, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
@@ -49,8 +45,6 @@ private:
     std::vector< std::vector< double > > subnetAdjacencyMatrix; //the map that defines the city
 
     std::queue<Job> jobs; //the jobs that have to be processed
-
-    mutable std::mutex mutex;
 
 };
 
