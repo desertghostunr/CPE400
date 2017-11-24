@@ -29,5 +29,26 @@ void CentralComputeNode::computeRoute(Route & route)
 
 void CentralComputeNode::directTraffic()
 {
+    Route route;
+
+    if (jobs.empty()) 
+    {
+        return;
+    }
+
 
 }
+
+Job::Job() : start(0), dest(0), id(0)
+{
+
+}
+
+Job::~Job() {}
+
+Route::Route() : start(0), dest(0), route()
+{
+
+}
+
+Route::~Route() {}

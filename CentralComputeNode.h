@@ -53,6 +53,8 @@ private:
 struct Job
 {
 public:
+    Job();
+    ~Job();
     int start; 
     int dest; 
     int id;
@@ -61,9 +63,12 @@ public:
 struct Route
 {
 public:
+    Route();
+    ~Route();
+
     int start;
     int dest;
-    std::list<std::pair<int, long long > >& route;
+    std::list<std::pair<int, long long > > route;
 };
 
 #endif
