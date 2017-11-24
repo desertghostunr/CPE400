@@ -12,11 +12,11 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <queue>
 #include "Vehicle.h"
 #include "ThreadSafeObject.h"
 
 struct Job;
+struct Route;
 
 class CentralComputeNode : public ThreadSafeObject
 {
@@ -28,7 +28,7 @@ public:
     //the start and finish subnet
     void queueJob(Job & job);
 
-    bool computeRoute(std::list<int>& route/*out: route*/, int& start/*out: start*/, int& dest/*out: dest*/);
+    void computeRoute(Route & route);
 
     void directTraffic();
 
@@ -42,9 +42,10 @@ private:
     std::map<int, std::list< int > > vehiclesAtSubnet; //a list of vehicles at each subnet
     std::map<int, std::list< int > > vechiclesGoingToSubnet; //a list of vehicles going to a given subnet
 
-    std::vector< std::vector< double > > subnetAdjacencyMatrix; //the map that defines the city
+    //this graph has the cost of a subnet in meters between subnets
+    std::vector< std::vector< double > > subnetAdjacencyMatrix; //the graph that defines the city
 
-    std::queue<Job> jobs; //the jobs that have to be processed
+    std::list<Job> jobs; //the jobs that have to be processed
 
 };
 
@@ -55,6 +56,14 @@ public:
     int start; 
     int dest; 
     int id;
+};
+
+struct Route
+{
+public:
+    int start;
+    int dest;
+    std::list<std::pair<int, long long > >& route;
 };
 
 #endif

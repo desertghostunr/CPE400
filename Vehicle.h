@@ -24,7 +24,7 @@ class Vehicle : public ThreadSafeObject
 		int getDestination() const;
 
 		void requestRoute(const CentralComputeNode & ccn);
-		void setRoute(std::list<int> route);
+		void setRoute(std::list<std::pair<int, long long > > route);
 
         void notifyRoadChange(const CentralComputeNode & cnn);
 
