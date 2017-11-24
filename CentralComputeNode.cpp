@@ -29,6 +29,8 @@ void CentralComputeNode::computeRoute(Route & route)
 
 void CentralComputeNode::directTraffic()
 {
+
+    // to do finish implementing
     Route route;
 
     if (jobs.empty()) 
@@ -36,7 +38,11 @@ void CentralComputeNode::directTraffic()
         return;
     }
 
+}
 
+void CentralComputeNode::joinNetwork(const Vehicle & vehicle, int id)
+{
+    // to do implement
 }
 
 Job::Job() : start(0), dest(0), id(0)
