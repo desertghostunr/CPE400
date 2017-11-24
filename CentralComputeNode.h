@@ -32,7 +32,7 @@ public:
 
     void directTraffic();
 
-    void joinNetwork(const Vehicle & vehicle, int id);
+    void joinNetwork(Vehicle & vehicle, int id);
 
 private:
 
