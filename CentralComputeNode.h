@@ -45,6 +45,7 @@ private:
 
     //this graph has the cost of a subnet in meters between subnets
     std::vector< std::vector< double > > subnetAdjacencyMatrix; //the graph that defines the city
+    std::map<std::string, int> subnetToIndexTable;
 
     std::list<Job> jobs; //the jobs that have to be processed
 

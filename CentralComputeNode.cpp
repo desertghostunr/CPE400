@@ -8,6 +8,7 @@ CentralComputeNode::CentralComputeNode()
     vehiclesAtSubnet(), 
     vechiclesGoingToSubnet(), 
     subnetAdjacencyMatrix(), 
+    subnetToIndexTable(),
     jobs()
 {
 
