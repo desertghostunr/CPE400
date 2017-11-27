@@ -1,4 +1,5 @@
 #include "CentralComputeNode.h"
+#include <unordered_set>
 
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
@@ -95,12 +96,17 @@ bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad,
         return true;
     }
 
-
     return false;
 }
 
 bool CentralComputeNode::aStar(Route & route)
 {
+    std::unordered_set<std::string> closedSet, openSet;
+
+    std::map<std::string, std::pair<std::string, long long > > cameFrom;
+
+    std::map<std::string, int> fScore, gScore;
+
 
 
     return false;
