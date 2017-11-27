@@ -1,6 +1,8 @@
 #include "CentralComputeNode.h"
 #include <unordered_set>
 
+#define _INFINITY 9999999
+
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
     subnetSpeed(), 
@@ -107,6 +109,19 @@ bool CentralComputeNode::aStar(Route & route)
     std::map<std::string, std::pair<std::string, long long > > cameFrom;
 
     std::map<std::string, int> fScore, gScore;
+
+    std::map<std::string, int>::iterator subnetIter;
+
+    //initialize tables
+    for(subnetIter = subnetToIndexTable.begin(); subnetIter != subnetToIndexTable.end(); ++subnetIter)
+    {
+        fScore[subnetIter->first] = _INFINITY;
+        gScore[subnetIter->first] = _INFINITY;
+    }
+
+    openSet.emplace(route.start);
+
+    gScore[route.start] = 0;
 
 
 
