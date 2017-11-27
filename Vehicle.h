@@ -2,6 +2,7 @@
 #define VEHICLE_H
 
 #include <list>
+#include <string>
 #include "ThreadSafeObject.h"
 #include "CentralComputeNode.h"
 
@@ -16,29 +17,32 @@
 class Vehicle : public ThreadSafeObject
 {
 	public:
-		Vehicle();
+		Vehicle(std::string newID, std::string newSource, std::string newDest);
     	~Vehicle();
 
-		void setDepart(int currTime);
-		int getElapsedTime() const;
-		int getDestination() const;
+		int getTravelTime() const;
+        int getTotalTime() const;
+		std::string getNextDestination() const;
 
-		void requestRoute(const CentralComputeNode & ccn);
-		void setRoute(std::list<std::pair<int, long long > > route);
+        bool hasRoute() const;
+        bool hasNode(const std::string &node) const;
+		
+        void requestRoute(const CentralComputeNode & ccn);
+		void setRoute(std::list<std::pair<std::string, long>> &route);
 
         void tryRoadChange(const CentralComputeNode & cnn);
 
         bool onRoute();
 
-        bool hasRoute();
 
 	private:
-		int id;
-		int sourceAddress;
-		int destAddress;
-		int departTime;
+		std::string id;
+		std::string sourceAddress;
+	    std::string destAddress;
+		int travelTime;
+        int totalTime;
 
-		std::list<int> route;
+		std::list<std::pair<std::string, long>>* route;
 };
 
 #endif
