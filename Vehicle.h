@@ -19,6 +19,10 @@ class Vehicle : public ThreadSafeObject
 
         bool hasRoute() const;
         bool hasNode(const std::string &node) const;
+
+        std::string getID();
+        std::string getSource();
+        std::string getDest();
 		
         void requestRoute(CentralComputeNode & ccn);
 		void setRoute(std::list<std::pair<std::string, long long>> newRoute);

@@ -38,6 +38,22 @@ bool Vehicle::hasRoute() const
     return (route != NULL);
 }
 
+std::string Vehicle::getID()
+{
+    return id;
+}
+
+std::string Vehicle::getSource()
+{
+    return sourceAddress;
+}
+
+std::string Vehicle::getDest()
+{
+    return destAddress;
+}
+
+
 
 bool Vehicle::hasNode(const std::string &node) const
 {

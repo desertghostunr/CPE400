@@ -121,6 +121,12 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running)
 {
     Vehicle car;
 
+    ccn.getLock();
+
+    ccn.joinNetwork(car);
+
+    ccn.releaseLock();
+
     while (running) 
     {
         car.getLock();

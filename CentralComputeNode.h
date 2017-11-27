@@ -26,7 +26,7 @@ public:
 
     void directTraffic();
 
-    void joinNetwork(Vehicle & vehicle, std::string & id);
+    void joinNetwork(Vehicle & vehicle);
 
     bool changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad);
 

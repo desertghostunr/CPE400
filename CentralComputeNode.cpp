@@ -84,9 +84,10 @@ void CentralComputeNode::directTraffic()
 
 }
 
-void CentralComputeNode::joinNetwork(Vehicle & vehicle, std::string & id)
+void CentralComputeNode::joinNetwork(Vehicle & vehicle)
 {
-    vehicles[id] = &vehicle;
+    vehicles[vehicle.getID()] = &vehicle;
+    vehiclesAtSubnet[vehicle.getSource()].push_front(vehicle.getID());
 }
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
@@ -112,6 +113,8 @@ bool CentralComputeNode::aStar(Route & route)
 
     std::map<std::string, int>::iterator subnetIter;
 
+    std::string current;
+
     //initialize tables
     for(subnetIter = subnetToIndexTable.begin(); subnetIter != subnetToIndexTable.end(); ++subnetIter)
     {
@@ -122,7 +125,13 @@ bool CentralComputeNode::aStar(Route & route)
     openSet.emplace(route.start);
 
     gScore[route.start] = 0;
+    fScore[route.start] = vehiclesAtSubnet[route.start].size(); //heuristic
 
+    while(!openSet.empty())
+    {
+        
+
+    }
 
 
     return false;
