@@ -22,9 +22,9 @@ void CentralComputeNode::queueJob(Job & job)
     jobs.push_back(job);
 }
 
-void CentralComputeNode::computeRoute(Route & route) 
+bool CentralComputeNode::computeRoute(Route & route) 
 {
-    // to do compute using AStar
+    return aStar(route);
 }
 
 void CentralComputeNode::directTraffic()
@@ -81,6 +81,38 @@ void CentralComputeNode::directTraffic()
 void CentralComputeNode::joinNetwork(Vehicle & vehicle, int id)
 {
     vehicles[id] = &vehicle;
+}
+
+
+bool CentralComputeNode::aStar(Route & route)
+{
+
+
+    return false;
+}
+
+Route CentralComputeNode::reconstructPath
+(
+    std::map<int, std::pair<int, long long > > & cameFrom, 
+    std::pair<int, long long > & current, 
+    int start
+)
+{
+    Route route;
+    
+    route.dest = current.first;
+
+    route.start = start;
+
+    route.route.push_front(current);
+
+    while (current.first != start && current.first != -1)
+    {
+        current = cameFrom[current.first];
+        route.route.push_front(current);
+    }
+
+    return route;
 }
 
 Job::Job() : start(0), dest(0), id(0)

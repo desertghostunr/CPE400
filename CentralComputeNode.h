@@ -28,13 +28,18 @@ public:
     //the start and finish subnet
     void queueJob(Job & job);
 
-    void computeRoute(Route & route);
+    bool computeRoute(Route & route);
 
     void directTraffic();
 
     void joinNetwork(Vehicle & vehicle, int id);
 
 private:
+
+    bool aStar(Route & route);
+
+    Route reconstructPath(std::map<int, std::pair<int, long long > > & cameFrom, 
+                                 std::pair<int, long long > & current, int start);
 
     std::map<int, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
     std::map<int, double> subnetSpeed; //in m/s
