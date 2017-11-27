@@ -1,17 +1,11 @@
 #ifndef CENTRALCOMPUTENODE_H
 #define CENTRALCOMPUTENODE_H
 
-// we need to make this thread safe
-
-//maybe this? https://stackoverflow.com/questions/33895071/how-to-implement-class-lock-objects-for-multithreaded-access
-
-// the second one looks option in the solution might be better
-
-// I wish c++ had something as simple as lock(){} in c# ...
 
 #include <vector>
 #include <list>
 #include <map>
+#include <string>
 #include "Vehicle.h"
 #include "ThreadSafeObject.h"
 
@@ -32,20 +26,22 @@ public:
 
     void directTraffic();
 
-    void joinNetwork(Vehicle & vehicle, int id);
+    void joinNetwork(Vehicle & vehicle, std::string & id);
+
+    bool changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad);
 
 private:
 
     bool aStar(Route & route);
 
-    Route reconstructPath(std::map<int, std::pair<int, long long > > & cameFrom, 
-                                 std::pair<int, long long > & current, int start);
+    Route reconstructPath(std::map<std::string, std::pair<std::string, long long > > & cameFrom,
+                                 std::pair<std::string, long long > & current, std::string start);
 
-    std::map<int, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
-    std::map<int, double> subnetSpeed; //in m/s
-    std::map<int, int> subnetCapacity; // the number of cars that fit on a subnet
-    std::map<int, std::list< int > > vehiclesAtSubnet; //a list of vehicles at each subnet
-    std::map<int, std::list< int > > vechiclesGoingToSubnet; //a list of vehicles going to a given subnet
+    std::map<std::string, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
+    std::map<std::string, double> subnetSpeed; //in m/s
+    std::map<std::string, int> subnetCapacity; // the number of cars that fit on a subnet
+    std::map<std::string, std::list< std::string > > vehiclesAtSubnet; //a list of vehicles at each subnet
+    std::map<std::string, std::list< std::string > > vechiclesGoingToSubnet; //a list of vehicles going to a given subnet
 
     //this graph has the cost of a subnet in meters between subnets
     std::vector< std::vector< double > > subnetAdjacencyMatrix; //the graph that defines the city
@@ -60,9 +56,9 @@ struct Job
 public:
     Job();
     ~Job();
-    int start; 
-    int dest; 
-    int id;
+    std::string start;
+    std::string dest;
+    std::string id;
 };
 
 struct Route
@@ -71,9 +67,9 @@ public:
     Route();
     ~Route();
 
-    int start;
-    int dest;
-    std::list<std::pair<int, long long > > route;
+    std::string start;
+    std::string dest;
+    std::list<std::pair<std::string, long long > > route;
 };
 
 #endif

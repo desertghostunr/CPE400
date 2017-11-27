@@ -62,7 +62,9 @@ void CentralComputeNode::directTraffic()
         {
             if(vehicles[job.id] != NULL)
             {
+                vehicles[job.id]->getLock();
                 vehicles[job.id]->setRoute(route.route);
+                vehicles[job.id]->releaseLock();
 
                 jobIter = jobs.erase(jobIter);
 
@@ -78,11 +80,24 @@ void CentralComputeNode::directTraffic()
 
 }
 
-void CentralComputeNode::joinNetwork(Vehicle & vehicle, int id)
+void CentralComputeNode::joinNetwork(Vehicle & vehicle, std::string & id)
 {
     vehicles[id] = &vehicle;
 }
 
+bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
+{
+    if(vehiclesAtSubnet[newRoad].size() < subnetCapacity[newRoad])
+    {
+        vehiclesAtSubnet[newRoad].push_back(id);
+        vehiclesAtSubnet[currentRoad].remove(id);
+
+        return true;
+    }
+
+
+    return false;
+}
 
 bool CentralComputeNode::aStar(Route & route)
 {
@@ -93,9 +108,9 @@ bool CentralComputeNode::aStar(Route & route)
 
 Route CentralComputeNode::reconstructPath
 (
-    std::map<int, std::pair<int, long long > > & cameFrom, 
-    std::pair<int, long long > & current, 
-    int start
+    std::map<std::string, std::pair<std::string, long long > > & cameFrom,
+    std::pair<std::string, long long > & current,
+    std::string start
 )
 {
     Route route;
@@ -106,7 +121,7 @@ Route CentralComputeNode::reconstructPath
 
     route.route.push_front(current);
 
-    while (current.first != start && current.first != -1)
+    while (current.first != start && current.first.empty())
     {
         current = cameFrom[current.first];
         route.route.push_front(current);
