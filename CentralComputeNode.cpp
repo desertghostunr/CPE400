@@ -147,11 +147,7 @@ bool CentralComputeNode::aStar(Route & route)
     {        
         if(current == route.dest)
         {
-            this->getLock();
-            {
-                route = reconstructPath(cameFrom, current, route.start); 
-            }
-            this->releaseLock();
+            route = reconstructPath(cameFrom, current, route.start);
 
             return true;
         }
@@ -276,9 +272,37 @@ Route CentralComputeNode::reconstructPath
     return route;
 }
 
-std::vector<std::string> expandNode(std::string current)
+std::vector<std::string> CentralComputeNode::expandNode(std::string current)
 {
-    return std::vector<std::string>(); // to do implement
+    std::map<std::string, int>::iterator iter;
+    std::vector<std::string> neighbors;
+
+    this->getLock();
+    {
+
+        int currentAddr = subnetToIndexTable[current];
+
+        for (iter = subnetToIndexTable.begin(); iter != subnetToIndexTable.end(); ++iter)
+        {
+            //same
+            if (iter->first == current)
+            {
+                continue;
+            }
+
+            //not a neighbor
+            if (subnetAdjacencyMatrix[currentAddr][iter->second] < 0)
+            {
+                continue;
+            }
+
+            neighbors.push_back(iter->first);
+        }
+
+    }
+    this->releaseLock();
+
+    return neighbors;
 }
 
 Job::Job() : start(0), dest(0), id(0)
