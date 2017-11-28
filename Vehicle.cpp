@@ -2,7 +2,7 @@
 
 Vehicle::Vehicle(std::string newID, std::string newSource, std::string newDest)
             : id(newID), sourceAddress(newSource), destAddress(newDest), 
-            travelTime(0), totalTime(0), route(NULL), routeRequested(false)
+            travelTime(), totalTime(), travelTimeLeft(0), route(NULL), routeRequested(false)
 {
     // Constructor Initialized
 }
@@ -16,22 +16,46 @@ Vehicle::~Vehicle()
     }
 }
 
-int Vehicle::getTravelTime() const
+void Vehicle::setStartTime() 
 {
-    return travelTime;
+    totalTime = std::chrono::system_clock::now();
+}
+
+void Vehicle::setDepartTime() 
+{
+    travelTime = std::chrono::system_clock::now();
+}
+
+std::chrono::duration<double> Vehicle::getTravelTime() const
+{
+    return (std::chrono::system_clock::now() - travelTime);
 }
 
 
-int Vehicle::getTotalTime() const
+std::chrono::duration<double> Vehicle::getTotalTime() const
 {
-    return totalTime;
+    return (std::chrono::system_clock::now() - totalTime);
 }
 
 std::string Vehicle::getNextDestination() const
 {
+    if(route->empty())
+    {
+        return std::string("");
+    }
+
     return route->front().first;
 }
 
+bool Vehicle::timeRemainingToNextDestination() const
+{
+    if(std::chrono::duration<double>(travelTimeLeft) > getTravelTime())
+    {
+        return true;
+    }
+
+    return false;
+}
 
 bool Vehicle::hasRoute() const
 {
@@ -57,8 +81,8 @@ std::string Vehicle::getDest()
 
 bool Vehicle::hasNode(const std::string &node) const
 {
-    std::list<std::pair<std::string, long long>>::const_iterator cursor = route->begin();
-    std::list<std::pair<std::string, long long>>::const_iterator end = route->end();
+    std::list<std::pair<std::string, double>>::const_iterator cursor = route->begin();
+    std::list<std::pair<std::string, double>>::const_iterator end = route->end();
 
     while(cursor != end)
     {
@@ -96,11 +120,11 @@ void Vehicle::requestRoute(CentralComputeNode & ccn)
     routeRequested = true;
 }
 
-void Vehicle::setRoute(std::list<std::pair<std::string, long long>> newRoute)
+void Vehicle::setRoute(std::list<std::pair<std::string, double>> newRoute)
 {
     if(!newRoute.empty())
     {
-        route = new std::list<std::pair<std::string, long long>>(newRoute);
+        route = new std::list<std::pair<std::string, double>>(newRoute);
     }
 
     routeRequested = false;
@@ -108,7 +132,7 @@ void Vehicle::setRoute(std::list<std::pair<std::string, long long>> newRoute)
 
 bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
 {
-    std::pair<std::string, long long> node;
+    std::pair<std::string, double> node;
     bool success;
 
     node = route->front();
@@ -127,6 +151,7 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     }
     else 
     {
+        travelTimeLeft = node.second;
         sourceAddress = route->front().first;
     }
 

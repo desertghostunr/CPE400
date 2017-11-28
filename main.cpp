@@ -114,11 +114,18 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) //I think 
             ccn.directTraffic();
         }
         ccn.releaseLock();
+
+        WaitFor(10);
     }
 }
 
 void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, long long timeStep) // need to add init param
 {
+
+    bool started = false;
+
+    car.setStartTime();
+    
     ccn.getLock();
     {
         ccn.joinNetwork(car);
@@ -131,7 +138,27 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
         {
             if (car.hasRoute())
             {
+                //start moving to destination
+                if(!started)
+                {
+                    started = true;
+                    car.setDepartTime();
+                    
+                }
+
+                //if at dest, then complete
+                if (car.getNextDestination() == "" && !car.timeRemainingToNextDestination())
+                {
+                    break;
+                }
                 
+                if(!car.timeRemainingToNextDestination())
+                {
+                    if(car.tryRoadChange(ccn))
+                    {
+                        car.setDepartTime();
+                    }
+                }                
             }
             else
             {
@@ -142,7 +169,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
         car.releaseLock();
 
         //might want to use a random time for the sake of collisions
-        WaitFor(300);
+        WaitFor(500);
     }
 }
 

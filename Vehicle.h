@@ -3,6 +3,7 @@
 
 #include <list>
 #include <string>
+#include <chrono>
 #include "ThreadSafeObject.h"
 #include "CentralComputeNode.h"
 
@@ -13,9 +14,14 @@ class Vehicle : public ThreadSafeObject
 		Vehicle(std::string newID, std::string newSource, std::string newDest);
     	~Vehicle();
 
-		int getTravelTime() const;
-        int getTotalTime() const;
+        void setStartTime();
+        void setDepartTime();
+
+        std::chrono::duration<double> getTravelTime() const;
+        std::chrono::duration<double> getTotalTime() const;
 		std::string getNextDestination() const;
+
+        bool timeRemainingToNextDestination() const;
 
         bool hasRoute() const;
         bool hasNode(const std::string &node) const;
@@ -25,7 +31,7 @@ class Vehicle : public ThreadSafeObject
         std::string getDest();
 		
         void requestRoute(CentralComputeNode & ccn);
-		void setRoute(std::list<std::pair<std::string, long long>> newRoute);
+		void setRoute(std::list<std::pair<std::string, double>> newRoute);
 
         bool tryRoadChange(CentralComputeNode & ccn);
 
@@ -34,10 +40,12 @@ class Vehicle : public ThreadSafeObject
 		std::string id;
 		std::string sourceAddress;
 	    std::string destAddress;
-		int travelTime;
-        int totalTime;
+        std::chrono::time_point<std::chrono::system_clock> travelTime;
+        std::chrono::time_point<std::chrono::system_clock> totalTime;
 
-		std::list<std::pair<std::string, long long>>* route;
+        double travelTimeLeft;
+
+		std::list<std::pair<std::string, double>>* route;
 
         bool routeRequested;
 };

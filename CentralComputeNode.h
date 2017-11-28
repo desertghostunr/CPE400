@@ -72,7 +72,7 @@ public:
 
     std::string start;
     std::string dest;
-    std::list<std::pair<std::string, long long > > route;
+    std::list<std::pair<std::string, double > > route;
 };
 
 #endif

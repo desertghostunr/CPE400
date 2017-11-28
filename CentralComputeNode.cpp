@@ -4,7 +4,7 @@
 #define _INFINITY 9999999
 
 template<typename Type>
-bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, long long> & fScore, Type & lowest);
+bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fScore, Type & lowest);
 
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
@@ -112,7 +112,7 @@ bool CentralComputeNode::aStar(Route & route)
 
     std::map<std::string, std::string> cameFrom;
 
-    std::map<std::string, long long> fScore, gScore;
+    std::map<std::string, double> fScore, gScore;
 
     std::map<std::string, int>::iterator subnetIter;
 
@@ -215,7 +215,7 @@ Route CentralComputeNode::reconstructPath
 {
     Route route;
     
-    long long cost = 0;
+    double cost = 0;
 
     route.dest = current;
 
@@ -225,7 +225,7 @@ Route CentralComputeNode::reconstructPath
     {
         if (cameFrom[current] != start && !cameFrom[current].empty())
         {
-            cost = static_cast<long long>((
+            cost = static_cast<double>((
                 subnetAdjacencyMatrix //get distance to neighbor from current
                 [
                     subnetToIndexTable[current] //translate name to index
@@ -241,7 +241,7 @@ Route CentralComputeNode::reconstructPath
         }
 
 
-        route.route.push_front(std::pair<std::string, long long >(current, cost));
+        route.route.push_front(std::pair<std::string, double>(current, cost));
 
         while (current != start && !current.empty())
         {
@@ -249,7 +249,7 @@ Route CentralComputeNode::reconstructPath
 
             if (!cameFrom[current].empty())
             {
-                cost = static_cast<long long>((
+                cost = static_cast<double>((
                     subnetAdjacencyMatrix //get distance to neighbor from current
                     [
                         subnetToIndexTable[current] //translate name to index
@@ -264,7 +264,7 @@ Route CentralComputeNode::reconstructPath
                 cost = 0;
             }
 
-            route.route.push_front(std::pair<std::string, long long >(current, cost));
+            route.route.push_front(std::pair<std::string, double>(current, cost));
         }
     }
     this->releaseLock();
@@ -320,7 +320,7 @@ Route::Route() : start(0), dest(0), route()
 Route::~Route() {}
 
 template<typename Type>
-bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, long long> & fScore, Type & lowest)
+bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fScore, Type & lowest)
 {
     int lowestCost = _INFINITY;
 
