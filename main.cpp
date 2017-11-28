@@ -105,7 +105,7 @@ void WaitFor(long long timeMS)
 }
 
 
-void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) 
+void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) //I think we should add a feature that checks on a cars progress every once in a while
 {
     while (running) 
     {
@@ -117,9 +117,9 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running)
     }
 }
 
-void Car(CentralComputeNode & ccn, std::atomic_bool & running)
+void Car(CentralComputeNode & ccn, std::atomic_bool & running) // need to add init param
 {
-    Vehicle car;
+    Vehicle car; // need to initialize 
 
     ccn.getLock();
 

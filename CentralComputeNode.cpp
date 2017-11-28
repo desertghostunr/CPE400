@@ -115,12 +115,16 @@ bool CentralComputeNode::aStar(Route & route)
 
     std::string current;
 
+    this->getLock(); // thread safety
+
     //initialize tables
     for(subnetIter = subnetToIndexTable.begin(); subnetIter != subnetToIndexTable.end(); ++subnetIter)
     {
         fScore[subnetIter->first] = _INFINITY;
         gScore[subnetIter->first] = _INFINITY;
     }
+
+    this->releaseLock();
 
     openSet.emplace(route.start);
 
