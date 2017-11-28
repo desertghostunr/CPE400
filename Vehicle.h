@@ -29,8 +29,6 @@ class Vehicle : public ThreadSafeObject
 
         bool tryRoadChange(CentralComputeNode & ccn);
 
-        bool onRoute();
-
 
 	private:
 		std::string id;
@@ -40,6 +38,8 @@ class Vehicle : public ThreadSafeObject
         int totalTime;
 
 		std::list<std::pair<std::string, long long>>* route;
+
+        bool routeRequested;
 };
 
 #endif

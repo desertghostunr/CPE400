@@ -2,7 +2,7 @@
 
 Vehicle::Vehicle(std::string newID, std::string newSource, std::string newDest)
             : id(newID), sourceAddress(newSource), destAddress(newDest), 
-            travelTime(0), totalTime(0), route(NULL)
+            travelTime(0), totalTime(0), route(NULL), routeRequested(false)
 {
     // Constructor Initialized
 }
@@ -76,6 +76,11 @@ void Vehicle::requestRoute(CentralComputeNode & ccn)
 {
     Job job;
 
+    if(routeRequested)
+    {
+        return;
+    }
+
     job.start = sourceAddress;
 
     job.dest = destAddress;
@@ -83,11 +88,12 @@ void Vehicle::requestRoute(CentralComputeNode & ccn)
     job.id = id;
 
     ccn.getLock();
-
-    ccn.queueJob(job);
-
+    {
+        ccn.queueJob(job);
+    }
     ccn.releaseLock();
 
+    routeRequested = true;
 }
 
 void Vehicle::setRoute(std::list<std::pair<std::string, long long>> newRoute)
@@ -96,6 +102,8 @@ void Vehicle::setRoute(std::list<std::pair<std::string, long long>> newRoute)
     {
         route = new std::list<std::pair<std::string, long long>>(newRoute);
     }
+
+    routeRequested = false;
 }
 
 bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
@@ -124,12 +132,5 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
 
     return success;
     
-}
-
-bool Vehicle::onRoute()
-{
-    //needs to be implemented
-
-    return false;
 }
 

@@ -27,7 +27,7 @@ void WaitFor(long long timeMS);
 void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running);
 
 //function that runs a car in another thread
-void Car(CentralComputeNode & ccn, std::atomic_bool & running);
+void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, long long timeStep);
 
 
 int main() //todo: add command line params, take input, and handle errors
@@ -117,10 +117,8 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) //I think 
     }
 }
 
-void Car(CentralComputeNode & ccn, std::atomic_bool & running) // need to add init param
+void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, long long timeStep) // need to add init param
 {
-    Vehicle car; // need to initialize 
-
     ccn.getLock();
     {
         ccn.joinNetwork(car);
@@ -133,7 +131,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running) // need to add in
         {
             if (car.hasRoute())
             {
-                //some logic for moving the car down a roadway
+                
             }
             else
             {
