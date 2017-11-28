@@ -177,7 +177,8 @@ bool CentralComputeNode::aStar(Route & route)
             this->getLock();
             {
                 tentativeGScore = gScore[current] //get current gScore and add the cost to get to neighbor
-                    + static_cast<long long>((subnetAdjacencyMatrix //get distance to neighbor from current
+                    + static_cast<long long>((
+                        subnetAdjacencyMatrix //get distance to neighbor from current
                         [
                             subnetToIndexTable[current] //translate name to index
                         ]
@@ -218,17 +219,59 @@ Route CentralComputeNode::reconstructPath
 {
     Route route;
     
+    long long cost = 0;
+
     route.dest = current;
 
     route.start = start;
 
-    route.route.push_front(std::pair<std::string, long long >(current, 0)); //to do add time value
-
-    while (current != start && current.empty())
+    this->getLock();
     {
-        current = cameFrom[current];
-        route.route.push_front(std::pair<std::string, long long >(current, 0));
+        if (cameFrom[current] != start && !cameFrom[current].empty())
+        {
+            cost = static_cast<long long>((
+                subnetAdjacencyMatrix //get distance to neighbor from current
+                [
+                    subnetToIndexTable[current] //translate name to index
+                ]
+                [
+                subnetToIndexTable[cameFrom[current]] //translate name to index
+                ]
+                / subnetSpeed[current])); //divide by speed to get cost
+        }
+        else
+        {
+            cost = 0;
+        }
+
+
+        route.route.push_front(std::pair<std::string, long long >(current, cost));
+
+        while (current != start && !current.empty())
+        {
+            current = cameFrom[current];
+
+            if (!cameFrom[current].empty())
+            {
+                cost = static_cast<long long>((
+                    subnetAdjacencyMatrix //get distance to neighbor from current
+                    [
+                        subnetToIndexTable[current] //translate name to index
+                    ]
+                    [
+                        subnetToIndexTable[cameFrom[current]] //translate name to index
+                    ]
+                / subnetSpeed[current])); //divide by speed to get cost
+            }
+            else
+            {
+                cost = 0;
+            }
+
+            route.route.push_front(std::pair<std::string, long long >(current, cost));
+        }
     }
+    this->releaseLock();
 
     return route;
 }
