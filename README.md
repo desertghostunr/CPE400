@@ -63,3 +63,26 @@ Class CentralComputeNode:
 		* Jobs (a queue of routes to be computed)
 
 		* mutex
+
+## Input Structure
+*Note: a -1 denotes not neighbors, 0 reserved for the same road
+
+car: [id] [start] [stop]
+
+roads:
+	[id] [id] [id]
+[id]  0   [d]   -1
+[id] [d]  0    [d]
+[id] -1   [d]  0
+
+roads:
+	[id] [id] [id]
+[id]  0   [c]   -1
+[id] [c]  0    [c]
+[id] -1   [c]  0
+
+roads:
+	[id] [id] [id]
+[id]  0   [s]   -1
+[id] [s]  0    [s]
+[id] -1   [s]  0
