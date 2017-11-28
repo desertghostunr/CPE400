@@ -37,6 +37,8 @@ private:
     Route reconstructPath(std::map<std::string, std::string> & cameFrom,
                                        std::string & current, std::string & start);
 
+    std::vector<std::string> expandNode(std::string current);
+
     std::map<std::string, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
     std::map<std::string, double> subnetSpeed; //in m/s
     std::map<std::string, int> subnetCapacity; // the number of cars that fit on a subnet

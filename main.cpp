@@ -110,9 +110,9 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) //I think 
     while (running) 
     {
         ccn.getLock();
-
-        ccn.directTraffic();
-
+        {
+            ccn.directTraffic();
+        }
         ccn.releaseLock();
     }
 }
@@ -122,25 +122,25 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running) // need to add in
     Vehicle car; // need to initialize 
 
     ccn.getLock();
-
-    ccn.joinNetwork(car);
-
+    {
+        ccn.joinNetwork(car);
+    }
     ccn.releaseLock();
 
     while (running) 
     {
         car.getLock();
-
-        if (car.hasRoute())
         {
-            //some logic for moving the car down a roadway
+            if (car.hasRoute())
+            {
+                //some logic for moving the car down a roadway
+            }
+            else
+            {
+                //request a route
+                car.requestRoute(ccn);
+            }
         }
-        else 
-        {
-            //request a route
-            car.requestRoute(ccn);
-        }
-
         car.releaseLock();
 
         //might want to use a random time for the sake of collisions

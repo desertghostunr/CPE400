@@ -4,7 +4,7 @@
 #define _INFINITY 9999999
 
 template<typename Type>
-bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, int> & fScore, Type & lowest);
+bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, long long> & fScore, Type & lowest);
 
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
@@ -57,31 +57,31 @@ void CentralComputeNode::directTraffic()
     //for each vehicle that can use the route, send it the route
 
     this->getLock(); // lock this for safe job iteration
-
-    jobIter = jobs.begin;
-
-    while (jobIter != jobs.end)
     {
-        job = *jobIter;
+        jobIter = jobs.begin;
 
-        //if the vehicle can use this route
-        if(job.start == route.start && job.dest == route.dest)
+        while (jobIter != jobs.end)
         {
-            if(vehicles[job.id] != NULL)
+            job = *jobIter;
+
+            //if the vehicle can use this route
+            if (job.start == route.start && job.dest == route.dest)
             {
-                vehicles[job.id]->getLock();
-                vehicles[job.id]->setRoute(route.route);
-                vehicles[job.id]->releaseLock();
+                if (vehicles[job.id] != NULL)
+                {
+                    vehicles[job.id]->getLock();
+                    vehicles[job.id]->setRoute(route.route);
+                    vehicles[job.id]->releaseLock();
 
-                jobIter = jobs.erase(jobIter);
+                    jobIter = jobs.erase(jobIter);
 
-                continue; // if we erased we don't need to increment iter
+                    continue; // if we erased we don't need to increment iter
+                }
             }
+
+            ++jobIter;
         }
-
-        ++jobIter;
     }
-
     this->releaseLock(); // release this
 
 
@@ -112,34 +112,45 @@ bool CentralComputeNode::aStar(Route & route)
 
     std::map<std::string, std::string> cameFrom;
 
-    std::map<std::string, int> fScore, gScore;
+    std::map<std::string, long long> fScore, gScore;
 
     std::map<std::string, int>::iterator subnetIter;
 
     std::string current;
 
+    std::vector<std::string> neighbors;
+
+    int index;
+
+    long long tentativeGScore;
+
     this->getLock(); // thread safety
-
-    //initialize tables
-    for(subnetIter = subnetToIndexTable.begin(); subnetIter != subnetToIndexTable.end(); ++subnetIter)
     {
-        fScore[subnetIter->first] = _INFINITY;
-        gScore[subnetIter->first] = _INFINITY;
-    }
+        //initialize tables
+        for (subnetIter = subnetToIndexTable.begin(); subnetIter != subnetToIndexTable.end(); ++subnetIter)
+        {
+            fScore[subnetIter->first] = _INFINITY;
+            gScore[subnetIter->first] = _INFINITY;
+        }
 
+        fScore[route.start] = vehiclesAtSubnet[route.start].size(); //heuristic
+    }
     this->releaseLock();
+
 
     openSet.emplace(route.start);
 
     gScore[route.start] = 0;
-    fScore[route.start] = vehiclesAtSubnet[route.start].size(); //heuristic
+    
 
     while(GetCheapestNode(openSet, fScore, current))
     {        
         if(current == route.dest)
         {
             this->getLock();
-            route = reconstructPath(cameFrom, current, route.start);
+            {
+                route = reconstructPath(cameFrom, current, route.start); 
+            }
             this->releaseLock();
 
             return true;
@@ -147,19 +158,62 @@ bool CentralComputeNode::aStar(Route & route)
 
         closedSet.emplace(current);
 
+        neighbors = expandNode(current);
 
+        for(index = 0; index < neighbors.size(); index++)
+        {
+            //if already evaluated
+            if(closedSet.count(neighbors[index]) > 0)
+            {
+                continue;
+            }
+
+            //if not in open set
+            if(openSet.count(neighbors[index]) < 1)
+            {
+                openSet.emplace(neighbors[index]);
+            }
+
+            this->getLock();
+            {
+                tentativeGScore = gScore[current] //get current gScore and add the cost to get to neighbor
+                    + static_cast<long long>((subnetAdjacencyMatrix //get distance to neighbor from current
+                        [
+                            subnetToIndexTable[current] //translate name to index
+                        ]
+                        [
+                            subnetToIndexTable[neighbors[index]] //translate name to index
+                        ]
+                    / subnetSpeed[current])); //divide by speed to get cost
+            }
+            this->releaseLock();
+
+            if(tentativeGScore > gScore[neighbors[index]])
+            {
+                continue;
+            }
+
+            cameFrom[neighbors[index]] = current;
+
+            gScore[neighbors[index]] = tentativeGScore;
+
+            this->getLock();
+            {
+                fScore[neighbors[index]] = tentativeGScore + vehiclesAtSubnet[current].size();
+            }
+            this->releaseLock();
+        }
 
     }
-
 
     return false;
 }
 
-Route reconstructPath
+Route CentralComputeNode::reconstructPath
 (
     std::map<std::string, std::string> & cameFrom,
     std::string & current,
-    std::string  &start
+    std::string & start
 )
 {
     Route route;
@@ -179,6 +233,11 @@ Route reconstructPath
     return route;
 }
 
+std::vector<std::string> expandNode(std::string current)
+{
+    return std::vector<std::string>(); // to do implement
+}
+
 Job::Job() : start(0), dest(0), id(0)
 {
 
@@ -194,7 +253,7 @@ Route::Route() : start(0), dest(0), route()
 Route::~Route() {}
 
 template<typename Type>
-bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, int> & fScore, Type & lowest)
+bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, long long> & fScore, Type & lowest)
 {
     int lowestCost = _INFINITY;
 

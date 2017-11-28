@@ -108,9 +108,9 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     route->pop_front();
 
     ccn.getLock();
-    
-    success = ccn.changeRoad(id, sourceAddress, route->front().first);
-
+    {
+        success = ccn.changeRoad(id, sourceAddress, route->front().first);
+    }
     ccn.releaseLock();
 
     if(!success)
