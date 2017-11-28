@@ -34,8 +34,8 @@ private:
 
     bool aStar(Route & route);
 
-    Route reconstructPath(std::map<std::string, std::pair<std::string, long long > > & cameFrom,
-                                 std::pair<std::string, long long > & current, std::string start);
+    Route reconstructPath(std::map<std::string, std::string> & cameFrom,
+                                       std::string & current, std::string & start);
 
     std::map<std::string, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
     std::map<std::string, double> subnetSpeed; //in m/s
