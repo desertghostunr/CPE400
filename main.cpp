@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdio>
+#include <cstdlib>
 #include <chrono>
 #include <thread>
 #include <atomic>
@@ -13,8 +14,9 @@
 
 // initializes and runs the simulator in separate threads
 void RunSimulator(std::vector<std::thread> & simulatorThreads, 
-                  CentralComputeNode & ccn, 
-                  std::atomic_bool & running); 
+                    CentralComputeNode & ccn, 
+                    std::vector<Vehicle> & cars,
+                    std::atomic_bool & running); 
 
 // end the simulator by joining all threads
 void EndSimulator(std::vector<std::thread> & simulatorThreads, 
@@ -33,6 +35,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
 int main() //todo: add command line params, take input, and handle errors
 {
     CentralComputeNode ccn;
+    std::vector < Vehicle > vehicles;
     std::vector<std::thread> simulatorThreads;
 
     std::atomic_bool running = true;
@@ -51,12 +54,14 @@ int main() //todo: add command line params, take input, and handle errors
     }
 
     //start sim in another thread
+    vehicles.resize(numberOfCars + 1);
+    simulatorThreads.resize(vehicles.size() + 1);
 
-    simulatorThreads.resize(numberOfCars + 1);
+    
 
     std::cout << "Starting the simulator." << std::endl << std::endl;
 
-    RunSimulator(simulatorThreads, ccn, std::ref(running));
+    RunSimulator(simulatorThreads, ccn, vehicles, std::ref(running));
 
     std::cout << "Press any key to end the simulator." << std::endl << std::endl;
 
@@ -73,17 +78,27 @@ int main() //todo: add command line params, take input, and handle errors
     return 0;
 }
 
-void RunSimulator(std::vector<std::thread> & simulatorThreads, CentralComputeNode & ccn, std::atomic_bool & running)
+void RunSimulator
+(
+    std::vector<std::thread> & simulatorThreads, 
+    CentralComputeNode & ccn, 
+    std::vector<Vehicle> & cars,
+    std::atomic_bool & running
+)
 {
+    long long tStep = 0;
     int index;
 
     //initialize and start the compute node
     simulatorThreads[0] = std::thread(ComputeNode, ccn, std::ref(running));
 
+    srand((unsigned)time(0));
+
     //initialize and start the cars
     for (index = 1; index < simulatorThreads.size(); index++)
     {
-        simulatorThreads[index] = std::thread(Car, ccn, std::ref(running));
+        tStep = (rand() % 1500) + 100;
+        simulatorThreads[index] = std::thread(Car, ccn, std::ref(running), cars[index - 1], tStep);
     }
 }
 
@@ -115,7 +130,7 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) //I think 
         }
         ccn.releaseLock();
 
-        WaitFor(10);
+        WaitFor(30);
     }
 }
 
@@ -169,7 +184,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
         car.releaseLock();
 
         //might want to use a random time for the sake of collisions
-        WaitFor(500);
+        WaitFor(timeStep);
     }
 }
 
