@@ -38,27 +38,27 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running);
 void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, long long timeStep);
 
 
-int main() //todo: add command line params, take input, and handle errors
+int main(int argc, char * argv[])
 {
     CentralComputeNode ccn;
     std::vector < Vehicle > vehicles;
     std::vector<std::thread> simulatorThreads;
+    std::string fileName;
 
     std::atomic_bool running = true;
-
-    bool error = false;
 
     int c, numberOfCars = 15;
 
     //take input
-
-
-    //error handling
-
-    if (error) 
+    if(argc < 2)
     {
+        std::cout << "Error: no file name specified. Terminating early." << std::endl;
         return -1;
     }
+
+    fileName = argv[1];
+
+    FetchInput(fileName, ccn, vehicles);
 
     //start sim in another thread
     vehicles.resize(numberOfCars + 1);
