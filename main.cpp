@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <cstdio>
 #include <cstdlib>
 #include <chrono>
@@ -6,11 +8,15 @@
 #include <atomic>
 #include <functional>
 #include <vector>
+#include <string>
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
 //the simulator program
 //this runs the simulation to test our SDN protocol
+
+//reads in the input file
+void FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
 
 // initializes and runs the simulator in separate threads
 void RunSimulator(std::vector<std::thread> & simulatorThreads, 
@@ -45,6 +51,7 @@ int main() //todo: add command line params, take input, and handle errors
     int c, numberOfCars = 15;
 
     //take input
+
 
     //error handling
 
