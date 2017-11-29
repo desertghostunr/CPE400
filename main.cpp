@@ -95,6 +95,9 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
     std::fstream fStream;
 
     std::string buffer;
+    std::string type;
+
+    std::string id, start, dest;
 
     fStream.open(fileName);
 
@@ -108,8 +111,32 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
     {
         strStream.str(buffer); 
 
+        strStream >> type;
 
+        if(type == "car")
+        {
+            strStream >> id;
+            strStream >> start;
+            strStream >> dest;
+
+            cars.push_back(Vehicle(id, start, dest));
+        }
+        else if(type == "map")
+        {
+
+        }
+        else if (type == "road")
+        {
+
+        }
+        else
+        {
+            fStream.close();
+            return false;
+        }        
     }
+
+    fStream.close();
 
     return true;
 }

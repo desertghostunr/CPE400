@@ -69,12 +69,13 @@ Class CentralComputeNode:
 *note: [d] = distance, [c] = capacity, [s] = speed
 
 ### start of file:
-car: [id] [start] [stop]
+car [id] [start] [stop]
 
-roads:
+map
 	[id] [id] [id]
 [id]  0   [d]   -1
 [id] [d]  0    [d]
 [id] -1   [d]  0
+end_map
 
-road: [id] [c] [s]
+road [id] [c] [s]
