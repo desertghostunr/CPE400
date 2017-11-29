@@ -16,7 +16,7 @@
 //this runs the simulation to test our SDN protocol
 
 //reads in the input file
-void FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
+bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
 
 // initializes and runs the simulator in separate threads
 void RunSimulator(std::vector<std::thread> & simulatorThreads, 
@@ -58,7 +58,11 @@ int main(int argc, char * argv[])
 
     fileName = argv[1];
 
-    FetchInput(fileName, ccn, vehicles);
+    if(!FetchInput(fileName, ccn, vehicles))
+    {
+        std::cout << "Error: invalid file name or contents. Terminating early." << std::endl;
+        return -1;
+    }
 
     //start sim in another thread
     vehicles.resize(numberOfCars + 1);
@@ -83,6 +87,31 @@ int main(int argc, char * argv[])
 
 
     return 0;
+}
+
+bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars)
+{
+    std::stringstream strStream;
+    std::fstream fStream;
+
+    std::string buffer;
+
+    fStream.open(fileName);
+
+    if(!fStream.is_open())
+    {
+        return false;
+    }
+
+    // get line and convert it's contents
+    while(std::getline(fStream, buffer))
+    {
+        strStream.str(buffer); 
+
+
+    }
+
+    return true;
 }
 
 void RunSimulator
