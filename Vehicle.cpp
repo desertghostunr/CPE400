@@ -1,4 +1,8 @@
+#ifndef VEHICLE_CPP
+#define VEHICLE_CPP
+
 #include "Vehicle.h"
+#include "CentralComputeNode.h"
 
 Vehicle::Vehicle(std::string newID, std::string newSource, std::string newDest)
             : id(newID), sourceAddress(newSource), destAddress(newDest), 
@@ -82,9 +86,8 @@ std::string Vehicle::getDest()
 bool Vehicle::hasNode(const std::string &node) const
 {
     std::list<std::pair<std::string, double>>::const_iterator cursor = route->begin();
-    std::list<std::pair<std::string, double>>::const_iterator end = route->end();
-
-    while(cursor != end)
+    
+    while(cursor != route->end())
     {
         if(cursor->first == node)
         {
@@ -124,6 +127,10 @@ void Vehicle::setRoute(std::list<std::pair<std::string, double>> newRoute)
 {
     if(!newRoute.empty())
     {
+        if(route != NULL)
+        {
+            delete route;
+        }
         route = new std::list<std::pair<std::string, double>>(newRoute);
     }
 
@@ -136,7 +143,6 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     bool success;
 
     node = route->front();
-
     route->pop_front();
 
     ccn.getLock();
@@ -154,8 +160,7 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
         travelTimeLeft = node.second;
         sourceAddress = route->front().first;
     }
-
     return success;
-    
 }
 
+#endif
