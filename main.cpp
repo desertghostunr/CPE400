@@ -123,11 +123,31 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
         }
         else if(type == "map")
         {
+            //handle first row
 
+            //TO DO: WRITE CODE FOR THIS
+
+            //subsequent rows
+            while(true)
+            {
+                std::getline(fStream, buffer);
+
+                strStream.str(buffer);
+
+                strStream >> type;
+
+                if(type == "end_map")
+                {
+                    break;
+                }
+                
+                //TO DO: WRITE LOGIC FOR BUIDLING MAP!
+            }
+            
         }
         else if (type == "road")
         {
-
+            //TO DO: WRITE LOGIC FOR ACTUALLY READING IN ROAD INFO
         }
         else
         {
