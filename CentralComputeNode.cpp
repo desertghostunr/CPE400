@@ -24,6 +24,37 @@ CentralComputeNode::~CentralComputeNode()
    
 }
 
+void CentralComputeNode::buildSubnetToIndexTable(std::vector<std::string> & subnets)
+{
+    int index;
+
+    for(index = 0; index < subnets.size(); index++)
+    {
+        subnetToIndexTable[subnets[index]] = index;
+    }
+}
+
+int CentralComputeNode::getMapIndex(std::string & name)
+{
+    if(subnetToIndexTable.count(name) < 1)
+    {
+        return -1;
+    }
+
+    return subnetToIndexTable[name];
+}
+
+void CentralComputeNode::setMap(std::vector<std::vector<double> > & map)
+{
+    subnetAdjacencyMatrix = map;
+}
+
+void CentralComputeNode::setSubnetProperties(std::string & name, int capacity, double speed)
+{
+    subnetCapacity[name] = capacity;
+    subnetSpeed[name] = speed;
+}
+
 void CentralComputeNode::queueJob(Job & job)
 {
     jobs.push_back(job);

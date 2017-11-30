@@ -16,7 +16,7 @@
 //this runs the simulation to test our SDN protocol
 
 //reads in the input file
-bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
+bool FetchInput(std::string & fileName, CentralComputeNode &   ccn, std::vector<Vehicle> & cars);
 
 // initializes and runs the simulator in separate threads
 void RunSimulator(std::vector<std::thread> & simulatorThreads, 
@@ -99,6 +99,16 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 
     std::string id, start, dest;
 
+    std::vector<std::string> roadIDs;
+
+    std::vector<std::vector<double> > map;
+
+    int index, row, col;
+
+    double cost, speed;
+
+    int capacity;
+
     fStream.open(fileName);
 
     if(!fStream.is_open())
@@ -124,30 +134,97 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
         else if(type == "map")
         {
             //handle first row
+            if (!std::getline(fStream, buffer))
+            {
+                return false;
+            }
+            
+            strStream.str(buffer);
 
-            //TO DO: WRITE CODE FOR THIS
+            while(strStream >> id)
+            {
+                roadIDs.push_back(id);
+            }
+
+            //build subnetToIndexTable
+            ccn.buildSubnetToIndexTable(roadIDs);
+
+            //alloc temp map
+            map.resize(roadIDs.size());
+
+            for(index = 0; index < map.size(); index++)
+            {
+                map[index].resize(roadIDs.size());
+            }
+
+            //initialize map values
+            for(row = 0; row < map.size(); row++)
+            {
+                for (col = 0; col = map[row].size(); col++) 
+                {
+                    if( row == col)
+                    {
+                        map[row][col] = 0;
+                    }
+                    else
+                    {
+                        map[row][col] = -1;
+                    }
+                }
+            }
 
             //subsequent rows
             while(true)
             {
-                std::getline(fStream, buffer);
+                if(!std::getline(fStream, buffer))
+                {
+                    return false;
+                }
 
                 strStream.str(buffer);
 
-                strStream >> type;
+                strStream >> id;
 
-                if(type == "end_map")
+                if(id == "end_map")
                 {
                     break;
                 }
-                
-                //TO DO: WRITE LOGIC FOR BUIDLING MAP!
+
+                col = 0;
+
+                row = ccn.getMapIndex(id);
+
+                if(row == -1 || row >= map.size())
+                {
+                    return false;
+                }
+
+                while(strStream >> cost)
+                {
+                    if(col > map[row].size())
+                    {
+                        return false;
+                    }
+
+                    map[row][col] = cost;
+                    col++;
+                }              
+
             }
+
+            //copy map to ccn
+            ccn.setMap(map);
             
         }
         else if (type == "road")
         {
-            //TO DO: WRITE LOGIC FOR ACTUALLY READING IN ROAD INFO
+            strStream >> id;
+
+            strStream >> capacity;
+
+            strStream >> speed;
+
+            ccn.setSubnetProperties(id, capacity, speed);
         }
         else
         {

@@ -19,7 +19,14 @@ public:
     CentralComputeNode();
     ~CentralComputeNode();
 
-    //the start and finish subnet
+    void buildSubnetToIndexTable(std::vector<std::string> & subnets);
+
+    int getMapIndex(std::string & name);
+
+    void setMap(std::vector<std::vector<double> > & map);
+
+    void setSubnetProperties(std::string & name, int capacity, double speed);
+   
     void queueJob(Job & job);
 
     bool computeRoute(Route & route);
