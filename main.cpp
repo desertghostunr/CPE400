@@ -9,6 +9,7 @@
 #include <functional>
 #include <vector>
 #include <string>
+#include "ThreadSafeObject.h"
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
@@ -22,7 +23,7 @@ bool FetchInput(std::string & fileName, CentralComputeNode &   ccn, std::vector<
 void RunSimulator(std::vector<std::thread> & simulatorThreads, 
                     CentralComputeNode & ccn, 
                     std::vector<Vehicle> & cars,
-                    std::atomic_bool & running); 
+                    std::atomic_bool & running, ThreadSafeObject & consoleLock); 
 
 // end the simulator by joining all threads
 void EndSimulator(std::vector<std::thread> & simulatorThreads, 
@@ -32,10 +33,11 @@ void EndSimulator(std::vector<std::thread> & simulatorThreads,
 void WaitFor(long long timeMS); 
 
 //function that runs the compute node in another thread
-void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running);
+void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock);
 
 //function that runs a car in another thread
-void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, long long timeStep);
+void Car(CentralComputeNode & ccn, std::atomic_bool & running, 
+    ThreadSafeObject & consoleLock, Vehicle & car, long long timeStep);
 
 
 int main(int argc, char * argv[])
@@ -46,6 +48,8 @@ int main(int argc, char * argv[])
     std::string fileName;
 
     std::atomic_bool running(true);
+
+    ThreadSafeObject consoleLock;
 
     int c, numberOfCars = 15;
 
@@ -58,6 +62,8 @@ int main(int argc, char * argv[])
 
     fileName = argv[1];
 
+    std::cout << "Reading in simulation data." << std::endl;
+
     if(!FetchInput(fileName, ccn, vehicles))
     {
         std::cout << "Error: invalid file name or contents. Terminating early." << std::endl;
@@ -67,18 +73,25 @@ int main(int argc, char * argv[])
     //start sim in another thread
     vehicles.resize(numberOfCars + 1);
     simulatorThreads.resize(vehicles.size() + 1);
-
     
 
     std::cout << "Starting the simulator." << std::endl << std::endl;
 
-    RunSimulator(simulatorThreads, ccn, vehicles, std::ref(running));
+    RunSimulator(simulatorThreads, ccn, vehicles, std::ref(running), std::ref(consoleLock));
 
-    std::cout << "Press any key to end the simulator." << std::endl << std::endl;
+    consoleLock.getLock(); 
+    {
+        std::cout << "Press any key to end the simulator." << std::endl << std::endl;
+    }
+    consoleLock.releaseLock();
 
     c = getchar();
 
-    std::cout << "Terminating the simulator." << std::endl << std::endl;
+    consoleLock.getLock(); 
+    {
+        std::cout << "Terminating the simulator." << std::endl << std::endl;
+    }
+    consoleLock.releaseLock();
 
     //after keyboard input end the simulator
     EndSimulator(simulatorThreads, std::ref(running));
@@ -109,12 +122,17 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 
     int capacity;
 
+    std::cout << "Opening file: " + fileName << "." << std::endl;
+
     fStream.open(fileName);
 
     if(!fStream.is_open())
     {
+        std::cout << "Failed to open file: " + fileName << "." << std::endl;
         return false;
     }
+
+    std::cout << "Reading in the files contents." << std::endl;
 
     // get line and convert it's contents
     while(std::getline(fStream, buffer))
@@ -125,17 +143,23 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 
         if(type == "car")
         {
+            
             strStream >> id;
             strStream >> start;
             strStream >> dest;
-
             cars.push_back(Vehicle(id, start, dest));
+
+            std::cout << "Car found: " << id << "." << std::endl;
         }
         else if(type == "map")
         {
+
+            std::cout << "Fetching map."<< std::endl;
+
             //handle first row
             if (!std::getline(fStream, buffer))
             {
+                std::cout << "Error: Expected map row header. Row header not found." << std::endl;
                 return false;
             }
             
@@ -144,11 +168,14 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
             while(strStream >> id)
             {
                 roadIDs.push_back(id);
+                std::cout << "Road found: " << id << "." << std::endl;
             }
 
             //build subnetToIndexTable
             ccn.buildSubnetToIndexTable(roadIDs);
 
+
+            std::cout << "Initializing map." << std::endl;
             //alloc temp map
             map.resize(roadIDs.size());
 
@@ -157,10 +184,11 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
                 map[index].resize(roadIDs.size());
             }
 
+
             //initialize map values
             for(row = 0; row < map.size(); row++)
             {
-                for (col = 0; col = map[row].size(); col++) 
+                for (col = 0; col < map[row].size(); col++) 
                 {
                     if( row == col)
                     {
@@ -173,11 +201,14 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
                 }
             }
 
+            std::cout << "Reading in map data." << std::endl;
+
             //subsequent rows
             while(true)
-            {
+            {                
                 if(!std::getline(fStream, buffer))
                 {
+                    std::cout << "Error: Expected row. Row not found." << std::endl;
                     return false;
                 }
 
@@ -185,10 +216,15 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 
                 strStream >> id;
 
+
+
                 if(id == "end_map")
                 {
+                    std::cout << "End of Map reached." << std::endl;
                     break;
                 }
+
+                std::cout << "Fetching row: " << id << "." << std::endl;
 
                 col = 0;
 
@@ -196,6 +232,7 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 
                 if(row == -1 || row >= map.size())
                 {
+                    std::cout << "Error: Invalid row provided: " << id << "." << std::endl;
                     return false;
                 }
 
@@ -203,6 +240,7 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
                 {
                     if(col > map[row].size())
                     {
+                        std::cout << "Error: Invalid number of columns found in row: " << id << "." << std::endl;
                         return false;
                     }
 
@@ -228,10 +266,13 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
         }
         else
         {
+            std::cout << "Error: unexpected type: " << type << "." << std::endl;
             fStream.close();
             return false;
         }        
     }
+
+    std::cout << "Finished processing file. Closing file." << std::endl;
 
     fStream.close();
 
@@ -243,14 +284,15 @@ void RunSimulator
     std::vector<std::thread> & simulatorThreads, 
     CentralComputeNode & ccn, 
     std::vector<Vehicle> & cars,
-    std::atomic_bool & running
+    std::atomic_bool & running,
+    ThreadSafeObject & consoleLock
 )
 {
     long long tStep = 0;
     int index;
 
     //initialize and start the compute node
-    simulatorThreads[0] = std::thread(ComputeNode, std::ref(ccn), std::ref(running));
+    simulatorThreads[0] = std::thread(ComputeNode, std::ref(ccn), std::ref(running), std::ref(consoleLock));
 
     srand((unsigned)time(0));
 
@@ -258,7 +300,7 @@ void RunSimulator
     for (index = 1; index < simulatorThreads.size(); index++)
     {
         tStep = (rand() % 1500) + 100;
-        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), std::ref(cars[index - 1]), tStep);
+        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), std::ref(consoleLock), std::ref(cars[index - 1]), tStep);
     }
 }
 
@@ -280,7 +322,7 @@ void WaitFor(long long timeMS)
 }
 
 
-void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) //I think we should add a feature that checks on a cars progress every once in a while
+void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock) //I think we should add a feature that checks on a cars progress every once in a while
 {
     while (running) 
     {
@@ -294,13 +336,23 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running) //I think 
     }
 }
 
-void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, long long timeStep) // need to add init param
+void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle & car, long long timeStep) // need to add init param
 {
 
     bool started = false;
 
-    car.setStartTime();
-    
+    car.getLock();
+    {
+        car.setStartTime();
+
+        consoleLock.getLock();
+        {
+            std::cout << "Car " + car.getID() << " is joining the network." << std::endl;
+        }
+        consoleLock.releaseLock();
+    }
+    car.releaseLock();
+
     ccn.getLock();
     {
         ccn.joinNetwork(&car);
@@ -318,12 +370,25 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
                 {
                     started = true;
                     car.setDepartTime();
+
+                    consoleLock.getLock();
+                    {
+                        std::cout << "Car " + car.getID() << " is departing for "
+                            << car.getDest() << " from " << car.getSource() << "." << std::endl;
+                    }
+                    consoleLock.releaseLock();
                     
                 }
 
                 //if at dest, then complete
                 if (car.getNextDestination() == "" && !car.timeRemainingToNextDestination())
                 {
+                    consoleLock.getLock();
+                    {
+                        std::cout << "Car " + car.getID() << " has reached " << car.getDest() << "." << std::endl;
+                    }
+                    consoleLock.releaseLock();
+
                     break;
                 }
                 
@@ -331,6 +396,12 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
                 {
                     if(car.tryRoadChange(ccn))
                     {
+                        consoleLock.getLock();
+                        {
+                            std::cout << "Car " + car.getID() << " has reached " << car.getSource() << "." << std::endl;
+                        }
+                        consoleLock.releaseLock();
+                        
                         car.setDepartTime();
                     }
                 }                
@@ -338,6 +409,12 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
             else
             {
                 //request a route
+                consoleLock.getLock();
+                {
+                    std::cout << "Car " + car.getID() << " is requesting a route from " << car.getSource() << " to " << car.getDest() << "." << std::endl;
+                }
+                consoleLock.releaseLock();
+
                 car.requestRoute(ccn);
             }
         }
