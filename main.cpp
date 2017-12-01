@@ -21,8 +21,8 @@ bool FetchInput(std::string & fileName, CentralComputeNode &   ccn, std::vector<
 
 // initializes and runs the simulator in separate threads
 void RunSimulator(std::vector<std::thread> & simulatorThreads, 
-                    CentralComputeNode & ccn, 
-                    std::vector<Vehicle> & cars,
+                    std::reference_wrapper<CentralComputeNode> ccn, 
+                    std::reference_wrapper<std::vector<Vehicle>> cars,
                     std::atomic_bool & running, ThreadSafeObject & consoleLock); 
 
 // end the simulator by joining all threads
@@ -43,7 +43,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running,
 int main(int argc, char * argv[])
 {
     CentralComputeNode ccn;
-    std::vector < Vehicle > vehicles;
+    std::vector<Vehicle> vehicles;
     std::vector<std::thread> simulatorThreads;
     std::string fileName;
 
@@ -76,7 +76,7 @@ int main(int argc, char * argv[])
 
     std::cout << "Starting the simulator." << std::endl << std::endl;
 
-    RunSimulator(simulatorThreads, ccn, vehicles, std::ref(running), std::ref(consoleLock));
+    RunSimulator(simulatorThreads, std::ref(ccn), std::ref(vehicles), std::ref(running), std::ref(consoleLock));
 
     consoleLock.getLock(); 
     {
@@ -283,8 +283,8 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 void RunSimulator
 (
     std::vector<std::thread> & simulatorThreads, 
-    CentralComputeNode & ccn, 
-    std::vector<Vehicle> * cars,
+    std::reference_wrapper<CentralComputeNode> ccn, 
+    std::reference_wrapper<std::vector<Vehicle>> cars,
     std::atomic_bool & running,
     ThreadSafeObject & consoleLock
 )
@@ -301,7 +301,7 @@ void RunSimulator
     for (index = 1; index < simulatorThreads.size(); index++)
     {
         tStep = (rand() % 1500) + 100;
-        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), std::ref(consoleLock), std::ref(cars[index - 1]), tStep);
+        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), std::ref(consoleLock), std::ref(cars.get()[index - 1]), tStep);
     }
 }
 
