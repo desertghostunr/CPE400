@@ -142,8 +142,7 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
         strStream >> type;
 
         if(type == "car")
-        {
-            
+        {            
             strStream >> id;
             strStream >> start;
             strStream >> dest;
@@ -212,11 +211,14 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
                     return false;
                 }
 
+                strStream.clear();
                 strStream.str(buffer);
 
-                strStream >> id;
-
-
+                if(!(strStream >> id))
+                {
+                    std::cout << "Error: expected id. ID not found. Found: " << strStream.str() << std::endl;
+                    return false;
+                }
 
                 if(id == "end_map")
                 {

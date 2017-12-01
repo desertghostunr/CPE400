@@ -1,4 +1,4 @@
-﻿car a a c
+car a a c
 map 
 	a   b    c   d
 a   0   500  250 -1
