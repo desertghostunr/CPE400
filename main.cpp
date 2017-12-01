@@ -51,7 +51,7 @@ int main(int argc, char * argv[])
 
     ThreadSafeObject consoleLock;
 
-    int c, numberOfCars = 15;
+    int c;
 
     //take input
     if(argc < 2)
@@ -71,7 +71,6 @@ int main(int argc, char * argv[])
     }
 
     //start sim in another thread
-    vehicles.resize(numberOfCars + 1);
     simulatorThreads.resize(vehicles.size() + 1);
     
 
@@ -285,7 +284,7 @@ void RunSimulator
 (
     std::vector<std::thread> & simulatorThreads, 
     CentralComputeNode & ccn, 
-    std::vector<Vehicle> & cars,
+    std::vector<Vehicle> * cars,
     std::atomic_bool & running,
     ThreadSafeObject & consoleLock
 )
