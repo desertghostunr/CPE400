@@ -7,11 +7,14 @@
 #include "ThreadSafeObject.h"
 #include "CentralComputeNode.h"
 
+class CentralComputeNode;
 
 class Vehicle : public ThreadSafeObject
 {
 	public:
+        Vehicle();
 		Vehicle(std::string newID, std::string newSource, std::string newDest);
+        Vehicle(const Vehicle & other);
     	~Vehicle();
 
         void setStartTime();

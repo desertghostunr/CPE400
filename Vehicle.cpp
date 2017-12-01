@@ -4,11 +4,29 @@
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
+Vehicle::Vehicle() 
+    : id(""), sourceAddress(""), destAddress(""), travelTime(), totalTime(), 
+    travelTimeLeft(0), route(NULL), routeRequested(false)
+{
+
+}
+
 Vehicle::Vehicle(std::string newID, std::string newSource, std::string newDest)
             : id(newID), sourceAddress(newSource), destAddress(newDest), 
             travelTime(), totalTime(), travelTimeLeft(0), route(NULL), routeRequested(false)
 {
     // Constructor Initialized
+}
+
+Vehicle::Vehicle(const Vehicle & other)
+    : id(other.id), sourceAddress(other.sourceAddress), destAddress(other.destAddress),
+    travelTime(other.travelTime), totalTime(other.totalTime),
+    travelTimeLeft(other.travelTimeLeft), route(NULL), routeRequested(other.routeRequested)
+{
+    if (other.route != NULL) 
+    {
+        route = new std::list<std::pair<std::string, double> >(*other.route);
+    }
 }
 
 Vehicle::~Vehicle()

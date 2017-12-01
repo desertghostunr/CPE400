@@ -11,6 +11,7 @@
 
 struct Job;
 struct Route;
+class Vehicle;
 
 class CentralComputeNode : public ThreadSafeObject
 {
@@ -33,7 +34,7 @@ public:
 
     void directTraffic();
 
-    void joinNetwork(Vehicle & vehicle);
+    void joinNetwork(Vehicle* vehicle);
 
     bool changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad);
 

@@ -89,9 +89,9 @@ void CentralComputeNode::directTraffic()
 
     this->getLock(); // lock this for safe job iteration
     {
-        jobIter = jobs.begin;
+        jobIter = jobs.begin();
 
-        while (jobIter != jobs.end)
+        while (jobIter != jobs.end())
         {
             job = *jobIter;
 
@@ -118,10 +118,10 @@ void CentralComputeNode::directTraffic()
 
 }
 
-void CentralComputeNode::joinNetwork(Vehicle & vehicle)
+void CentralComputeNode::joinNetwork(Vehicle * vehicle)
 {
-    vehicles[vehicle.getID()] = &vehicle;
-    vehiclesAtSubnet[vehicle.getSource()].push_front(vehicle.getID());
+    vehicles[vehicle->getID()] = vehicle;
+    vehiclesAtSubnet[vehicle->getSource()].push_front(vehicle->getID());
 }
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)

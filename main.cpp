@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
     std::vector<std::thread> simulatorThreads;
     std::string fileName;
 
-    std::atomic_bool running = true;
+    std::atomic_bool running(true);
 
     int c, numberOfCars = 15;
 
@@ -250,7 +250,7 @@ void RunSimulator
     int index;
 
     //initialize and start the compute node
-    simulatorThreads[0] = std::thread(ComputeNode, ccn, std::ref(running));
+    simulatorThreads[0] = std::thread(ComputeNode, std::ref(ccn), std::ref(running));
 
     srand((unsigned)time(0));
 
@@ -258,7 +258,7 @@ void RunSimulator
     for (index = 1; index < simulatorThreads.size(); index++)
     {
         tStep = (rand() % 1500) + 100;
-        simulatorThreads[index] = std::thread(Car, ccn, std::ref(running), cars[index - 1], tStep);
+        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), std::ref(cars[index - 1]), tStep);
     }
 }
 
@@ -303,7 +303,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, Vehicle & car, lo
     
     ccn.getLock();
     {
-        ccn.joinNetwork(car);
+        ccn.joinNetwork(&car);
     }
     ccn.releaseLock();
 
