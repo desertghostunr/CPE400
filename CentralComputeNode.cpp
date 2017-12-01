@@ -1,5 +1,6 @@
 #include "CentralComputeNode.h"
 #include <unordered_set>
+#include <iostream> //for debug
 
 #define _INFINITY 9999999
 
@@ -62,17 +63,24 @@ void CentralComputeNode::queueJob(Job & job)
 
 bool CentralComputeNode::computeRoute(Route & route) 
 {
+    std::cout << "Compute route!" << std::endl;
     return aStar(route);
 }
 
 void CentralComputeNode::directTraffic()
 {
+    std::cout << "dT init vars" << std::endl;
     std::list<Job>::iterator jobIter;
     Job job;
     Route route;
 
+
+    std::cout << "dT run" << std::endl;
+    
+
     if (jobs.empty()) 
     {
+        std::cout << "No jobs to do." << std::endl;
         return;
     }
 
@@ -87,33 +95,31 @@ void CentralComputeNode::directTraffic()
 
     //for each vehicle that can use the route, send it the route
 
-    this->getLock(); // lock this for safe job iteration
+    jobIter = jobs.begin();
+
+    while (jobIter != jobs.end())
     {
-        jobIter = jobs.begin();
+        job = *jobIter;
 
-        while (jobIter != jobs.end())
+        //if the vehicle can use this route
+        if (job.start == route.start && job.dest == route.dest)
         {
-            job = *jobIter;
-
-            //if the vehicle can use this route
-            if (job.start == route.start && job.dest == route.dest)
+            if (vehicles[job.id] != NULL)
             {
-                if (vehicles[job.id] != NULL)
+                vehicles[job.id]->getLock(); 
                 {
-                    vehicles[job.id]->getLock();
-                    vehicles[job.id]->setRoute(route.route);
-                    vehicles[job.id]->releaseLock();
-
-                    jobIter = jobs.erase(jobIter);
-
-                    continue; // if we erased we don't need to increment iter
+                    vehicles[job.id]->setRoute(route.route); 
                 }
-            }
+                vehicles[job.id]->releaseLock();
 
-            ++jobIter;
+                jobIter = jobs.erase(jobIter);
+
+                continue; // if we erased we don't need to increment iter
+            }
         }
+
+        ++jobIter;
     }
-    this->releaseLock(); // release this
 
 
 }
@@ -154,19 +160,16 @@ bool CentralComputeNode::aStar(Route & route)
     int index;
 
     long long tentativeGScore;
+    
 
-    this->getLock(); // thread safety
+    //initialize tables
+    for (subnetIter = subnetToIndexTable.begin(); subnetIter != subnetToIndexTable.end(); ++subnetIter)
     {
-        //initialize tables
-        for (subnetIter = subnetToIndexTable.begin(); subnetIter != subnetToIndexTable.end(); ++subnetIter)
-        {
-            fScore[subnetIter->first] = _INFINITY;
-            gScore[subnetIter->first] = _INFINITY;
-        }
-
-        fScore[route.start] = vehiclesAtSubnet[route.start].size(); //heuristic
+        fScore[subnetIter->first] = _INFINITY;
+        gScore[subnetIter->first] = _INFINITY;
     }
-    this->releaseLock();
+
+    fScore[route.start] = vehiclesAtSubnet[route.start].size(); //heuristic
 
 
     openSet.emplace(route.start);
@@ -201,20 +204,16 @@ bool CentralComputeNode::aStar(Route & route)
                 openSet.emplace(neighbors[index]);
             }
 
-            this->getLock();
-            {
-                tentativeGScore = gScore[current] //get current gScore and add the cost to get to neighbor
-                    + static_cast<long long>((
-                        subnetAdjacencyMatrix //get distance to neighbor from current
-                        [
-                            subnetToIndexTable[current] //translate name to index
-                        ]
-                        [
-                            subnetToIndexTable[neighbors[index]] //translate name to index
-                        ]
-                    / subnetSpeed[current])); //divide by speed to get cost
-            }
-            this->releaseLock();
+            tentativeGScore = gScore[current] //get current gScore and add the cost to get to neighbor
+                + static_cast<long long>((
+                    subnetAdjacencyMatrix //get distance to neighbor from current
+                    [
+                        subnetToIndexTable[current] //translate name to index
+                    ]
+            [
+                subnetToIndexTable[neighbors[index]] //translate name to index
+            ]
+            / subnetSpeed[current])); //divide by speed to get cost
 
             if(tentativeGScore > gScore[neighbors[index]])
             {
@@ -225,11 +224,7 @@ bool CentralComputeNode::aStar(Route & route)
 
             gScore[neighbors[index]] = tentativeGScore;
 
-            this->getLock();
-            {
-                fScore[neighbors[index]] = tentativeGScore + vehiclesAtSubnet[current].size();
-            }
-            this->releaseLock();
+            fScore[neighbors[index]] = tentativeGScore + vehiclesAtSubnet[current].size();
         }
 
     }
@@ -252,53 +247,48 @@ Route CentralComputeNode::reconstructPath
 
     route.start = start;
 
-    this->getLock();
+    if (cameFrom[current] != start && !cameFrom[current].empty())
     {
-        if (cameFrom[current] != start && !cameFrom[current].empty())
+        cost = static_cast<double>((
+            subnetAdjacencyMatrix //get distance to neighbor from current
+            [
+                subnetToIndexTable[current] //translate name to index
+            ]
+        [
+            subnetToIndexTable[cameFrom[current]] //translate name to index
+        ]
+        / subnetSpeed[current])); //divide by speed to get cost
+    }
+    else
+    {
+        cost = 0;
+    }
+    
+    route.route.push_front(std::pair<std::string, double>(current, cost));
+
+    while (current != start && !current.empty())
+    {
+        current = cameFrom[current];
+
+        if (!cameFrom[current].empty())
         {
             cost = static_cast<double>((
                 subnetAdjacencyMatrix //get distance to neighbor from current
                 [
                     subnetToIndexTable[current] //translate name to index
                 ]
-                [
+            [
                 subnetToIndexTable[cameFrom[current]] //translate name to index
-                ]
-                / subnetSpeed[current])); //divide by speed to get cost
+            ]
+            / subnetSpeed[current])); //divide by speed to get cost
         }
         else
         {
             cost = 0;
         }
 
-
         route.route.push_front(std::pair<std::string, double>(current, cost));
-
-        while (current != start && !current.empty())
-        {
-            current = cameFrom[current];
-
-            if (!cameFrom[current].empty())
-            {
-                cost = static_cast<double>((
-                    subnetAdjacencyMatrix //get distance to neighbor from current
-                    [
-                        subnetToIndexTable[current] //translate name to index
-                    ]
-                    [
-                        subnetToIndexTable[cameFrom[current]] //translate name to index
-                    ]
-                / subnetSpeed[current])); //divide by speed to get cost
-            }
-            else
-            {
-                cost = 0;
-            }
-
-            route.route.push_front(std::pair<std::string, double>(current, cost));
-        }
     }
-    this->releaseLock();
 
     return route;
 }
@@ -308,42 +298,36 @@ std::vector<std::string> CentralComputeNode::expandNode(std::string current)
     std::map<std::string, int>::iterator iter;
     std::vector<std::string> neighbors;
 
-    this->getLock();
+    int currentAddr = subnetToIndexTable[current];
+
+    for (iter = subnetToIndexTable.begin(); iter != subnetToIndexTable.end(); ++iter)
     {
-
-        int currentAddr = subnetToIndexTable[current];
-
-        for (iter = subnetToIndexTable.begin(); iter != subnetToIndexTable.end(); ++iter)
+        //same
+        if (iter->first == current)
         {
-            //same
-            if (iter->first == current)
-            {
-                continue;
-            }
-
-            //not a neighbor
-            if (subnetAdjacencyMatrix[currentAddr][iter->second] < 0)
-            {
-                continue;
-            }
-
-            neighbors.push_back(iter->first);
+            continue;
         }
 
+        //not a neighbor
+        if (subnetAdjacencyMatrix[currentAddr][iter->second] < 0)
+        {
+            continue;
+        }
+
+        neighbors.push_back(iter->first);
     }
-    this->releaseLock();
 
     return neighbors;
 }
 
-Job::Job() : start(0), dest(0), id(0)
+Job::Job() : start(""), dest(""), id("")
 {
 
 }
 
 Job::~Job() {}
 
-Route::Route() : start(0), dest(0), route()
+Route::Route() : start(""), dest(""), route()
 {
 
 }

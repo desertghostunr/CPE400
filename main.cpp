@@ -19,15 +19,8 @@
 //reads in the input file
 bool FetchInput(std::string & fileName, CentralComputeNode &   ccn, std::vector<Vehicle> & cars);
 
-// initializes and runs the simulator in separate threads
-void RunSimulator(std::vector<std::thread> & simulatorThreads, 
-                    std::reference_wrapper<CentralComputeNode> ccn, 
-                    std::reference_wrapper<std::vector<Vehicle>> cars,
-                    std::atomic_bool & running, ThreadSafeObject & consoleLock); 
-
 // end the simulator by joining all threads
-void EndSimulator(std::vector<std::thread> & simulatorThreads, 
-                  std::atomic_bool & running);
+void EndSimulator(std::vector<std::thread> & simulatorThreads);
 
 //function that runs the compute node in another thread
 void WaitFor(long long timeMS); 
@@ -37,7 +30,7 @@ void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running, ThreadSafe
 
 //function that runs a car in another thread
 void Car(CentralComputeNode & ccn, std::atomic_bool & running, 
-    ThreadSafeObject & consoleLock, Vehicle & car, long long timeStep);
+         ThreadSafeObject & consoleLock, Vehicle car, long long timeStep);
 
 
 int main(int argc, char * argv[])
@@ -50,6 +43,9 @@ int main(int argc, char * argv[])
     std::atomic_bool running(true);
 
     ThreadSafeObject consoleLock;
+
+    long long tStep = 0;
+    int index;
 
     int c;
 
@@ -76,7 +72,20 @@ int main(int argc, char * argv[])
 
     std::cout << "Starting the simulator." << std::endl << std::endl;
 
-    RunSimulator(simulatorThreads, std::ref(ccn), std::ref(vehicles), std::ref(running), std::ref(consoleLock));
+    //initialize and start the compute node
+    simulatorThreads[0] = std::thread(ComputeNode, std::ref(ccn), std::ref(running), std::ref(consoleLock));
+
+    srand((unsigned)time(0));
+
+    //initialize and start the cars
+    for (index = 1; index < simulatorThreads.size(); index++)
+    {
+        tStep = (rand() % 1500) + 100;
+        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), 
+                                              std::ref(consoleLock), vehicles[index - 1], tStep);
+    }
+
+   // ComputeNode(ccn, std::ref(running), std::ref(consoleLock));
 
     consoleLock.getLock(); 
     {
@@ -93,7 +102,9 @@ int main(int argc, char * argv[])
     consoleLock.releaseLock();
 
     //after keyboard input end the simulator
-    EndSimulator(simulatorThreads, std::ref(running));
+    running = false;
+
+    EndSimulator(simulatorThreads);
     
     std::cout << "Simulator terminated." << std::endl;
 
@@ -280,36 +291,9 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
     return true;
 }
 
-void RunSimulator
-(
-    std::vector<std::thread> & simulatorThreads, 
-    std::reference_wrapper<CentralComputeNode> ccn, 
-    std::reference_wrapper<std::vector<Vehicle>> cars,
-    std::atomic_bool & running,
-    ThreadSafeObject & consoleLock
-)
-{
-    long long tStep = 0;
-    int index;
-
-    //initialize and start the compute node
-    simulatorThreads[0] = std::thread(ComputeNode, std::ref(ccn), std::ref(running), std::ref(consoleLock));
-
-    srand((unsigned)time(0));
-
-    //initialize and start the cars
-    for (index = 1; index < simulatorThreads.size(); index++)
-    {
-        tStep = (rand() % 1500) + 100;
-        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), std::ref(consoleLock), std::ref(cars.get()[index - 1]), tStep);
-    }
-}
-
-void EndSimulator(std::vector<std::thread> & simulatorThreads, std::atomic_bool & running)
+void EndSimulator(std::vector<std::thread> & simulatorThreads)
 {
     int index;
-
-    running = false;
 
     for (index = 0; index < simulatorThreads.size(); index++) 
     {
@@ -323,24 +307,29 @@ void WaitFor(long long timeMS)
 }
 
 
-void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock) //I think we should add a feature that checks on a cars progress every once in a while
+void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock) //I think we should add a feature that checks on a cars progress every once in a while
 {
+    std::cout << "CCN started." << std::endl;
+
     while (running) 
     {
         ccn.getLock();
-        {
+        {            
+            std::cout << "Directing traffic" << std::endl;
             ccn.directTraffic();
         }
         ccn.releaseLock();
 
-        WaitFor(30);
+        WaitFor(75);
     }
 }
 
-void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle & car, long long timeStep) // need to add init param
+void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle car, long long timeStep) // need to add init param
 {
-
+    
     bool started = false;
+
+    std::cout << "Vehicle " << car.getID() << " started." << std::endl;
 
     car.getLock();
     {
