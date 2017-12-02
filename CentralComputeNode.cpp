@@ -220,7 +220,17 @@ bool CentralComputeNode::aStar(Route & route)
 
             gScore[neighbors[index]] = tentativeGScore;
 
-            fScore[neighbors[index]] = tentativeGScore + vehiclesAtSubnet[current].size();
+            fScore[neighbors[index]] = tentativeGScore 
+                + subnetAdjacencyMatrix //get distance to neighbor from current
+                [
+                    subnetToIndexTable[current] //translate name to index
+                ]
+                [
+                    subnetToIndexTable[neighbors[index]] //translate name to index
+                ] 
+                * (vehiclesAtSubnet[neighbors[index]].size() + vehiclesAtSubnet[current].size());
+
+                //std::cout << "FSCORE: " << fScore[neighbors[index]] << std::endl;
         }
 
     }
@@ -243,7 +253,7 @@ Route CentralComputeNode::reconstructPath
 
     route.start = start;
 
-    if (!cameFrom[current].empty())
+    if (cameFrom[current] != start && !cameFrom[current].empty())
     {
         cost = static_cast<double>((
             subnetAdjacencyMatrix //get distance to neighbor from current
@@ -259,13 +269,11 @@ Route CentralComputeNode::reconstructPath
     {
         cost = 0;
     }
-    //std::cout << "current: " << current << ", " << cost << std::endl;
+    std::cout << "current: " << current << ", " << cost << std::endl;
     route.route.push_front(std::pair<std::string, double>(current, cost));
 
     while (current != start && !current.empty())
     {
-        current = cameFrom[current];
-
         if (!cameFrom[current].empty())
         {
             cost = static_cast<double>((
@@ -273,9 +281,9 @@ Route CentralComputeNode::reconstructPath
                 [
                     subnetToIndexTable[current] //translate name to index
                 ]
-                [
-                    subnetToIndexTable[cameFrom[current]] //translate name to index
-                ]
+            [
+                subnetToIndexTable[cameFrom[current]] //translate name to index
+            ]
             /*/ subnetSpeed[current]*/)); //divide by speed to get cost
         }
         else
@@ -283,7 +291,9 @@ Route CentralComputeNode::reconstructPath
             cost = 0;
         }
 
-        //std::cout << "current: " << current << ", " << cost << std::endl;
+        current = cameFrom[current];        
+
+        std::cout << "current: " << current << ", " << cost << std::endl;
 
         route.route.push_front(std::pair<std::string, double>(current, cost));
     }

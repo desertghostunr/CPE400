@@ -322,7 +322,7 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
             ccn.directTraffic();
         }
         ccn.releaseLock();
-        WaitFor(200);
+        WaitFor(50);
     }
 }
 
@@ -404,7 +404,8 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                         {
                             consoleLock.getLock();
                             {
-                                std::cout << "Car " + car.getID() << " has reached " << car.getSource() << "." << std::endl;
+                                std::cout << "Car " + car.getID() << " has reached " 
+                                    << car.getSource() << "." << std::endl;
                             }
                             consoleLock.releaseLock();
                             car.setDepartTime();
