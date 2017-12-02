@@ -89,7 +89,7 @@ int main(int argc, char * argv[])
 
     consoleLock.getLock(); 
     {
-        std::cout << "Press any key to end the simulator." << std::endl << std::endl;
+        std::cout << "Press enter to end the simulator." << std::endl << std::endl;
     }
     consoleLock.releaseLock();
 

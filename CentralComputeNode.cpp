@@ -70,6 +70,8 @@ void CentralComputeNode::directTraffic()
     std::list<Job>::iterator jobIter;
     Job job;
     Route route;
+
+    int counter;
     
 
     if (jobs.empty()) 
