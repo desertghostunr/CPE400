@@ -1,6 +1,6 @@
 #ifndef VEHICLE_CPP
 #define VEHICLE_CPP
-
+#include <iostream> //debug
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
@@ -165,8 +165,9 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     }
     else 
     {
+        //std::cout << "Empty route!" << std::endl;
         travelTimeLeft = 0;
-        return true;
+        success = true;
     }
     
 
@@ -176,8 +177,9 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     }
     else 
     {
+        //std::cout << node.first << " Time to go: " << node.second << std::endl;
         travelTimeLeft = node.second;
-        sourceAddress = route->front().first;
+        sourceAddress = node.first;
     }
     return success;
 }

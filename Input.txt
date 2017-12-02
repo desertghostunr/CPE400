@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 car a a c
 map 
 	a   b    c   d
@@ -10,3 +11,17 @@ road a 250 45
 road b 250 60
 road c 100 76
 road d 75  68
+=======
+car a a c
+map 
+	a   b    c   d
+a   0   50  25   -1
+b   50  0    30  40
+c   25  30  0   -1
+d  -1   40  -1   0
+end_map
+road a 250
+road b 250
+road c 100
+road d 75
+>>>>>>> 72e52caab250c95093b174ce3811d6810cfad358

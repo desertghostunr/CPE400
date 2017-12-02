@@ -17,7 +17,7 @@
 //this runs the simulation to test our SDN protocol
 
 //reads in the input file
-bool FetchInput(std::string & fileName, CentralComputeNode &   ccn, std::vector<Vehicle> & cars);
+bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
 
 // end the simulator by joining all threads
 void EndSimulator(std::vector<std::thread> & simulatorThreads);
@@ -89,7 +89,7 @@ int main(int argc, char * argv[])
 
     consoleLock.getLock(); 
     {
-        std::cout << "Press any key to end the simulator." << std::endl << std::endl;
+        std::cout << "Press enter to end the simulator." << std::endl << std::endl;
     }
     consoleLock.releaseLock();
 
@@ -272,9 +272,9 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 
             strStream >> capacity;
 
-            strStream >> speed;
+            //strStream >> speed;
 
-            ccn.setSubnetProperties(id, capacity, speed);
+            ccn.setSubnetProperties(id, capacity/*, speed*/);
         }
         else
         {
@@ -322,7 +322,7 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
             ccn.directTraffic();
         }
         ccn.releaseLock();
-        WaitFor(200);
+        WaitFor(50);
     }
 }
 
@@ -383,7 +383,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                 }
 
                 //if at dest, then complete
-                if (car.getNextDestination() == "" && !car.timeRemainingToNextDestination())
+                if (car.getNextDestination() == "")
                 {
                     consoleLock.getLock();
                     {
@@ -404,7 +404,8 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                         {
                             consoleLock.getLock();
                             {
-                                std::cout << "Car " + car.getID() << " has reached " << car.getSource() << "." << std::endl;
+                                std::cout << "Car " + car.getID() << " has reached " 
+                                    << car.getSource() << "." << std::endl;
                             }
                             consoleLock.releaseLock();
                             car.setDepartTime();

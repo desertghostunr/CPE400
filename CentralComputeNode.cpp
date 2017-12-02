@@ -8,7 +8,7 @@ bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fS
 
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
-    subnetSpeed(), 
+    //subnetSpeed(), 
     subnetCapacity(), 
     vehiclesAtSubnet(), 
     vechiclesGoingToSubnet(), 
@@ -49,10 +49,10 @@ void CentralComputeNode::setMap(std::vector<std::vector<double> > & map)
     subnetAdjacencyMatrix = map;
 }
 
-void CentralComputeNode::setSubnetProperties(std::string & name, int capacity, double speed)
+void CentralComputeNode::setSubnetProperties(std::string & name, int capacity/*, double speed*/)
 {
     subnetCapacity[name] = capacity;
-    subnetSpeed[name] = speed;
+    //subnetSpeed[name] = speed;
 }
 
 void CentralComputeNode::queueJob(Job & job)
@@ -70,6 +70,8 @@ void CentralComputeNode::directTraffic()
     std::list<Job>::iterator jobIter;
     Job job;
     Route route;
+
+    int counter;
     
 
     if (jobs.empty()) 
@@ -199,15 +201,17 @@ bool CentralComputeNode::aStar(Route & route)
             }
 
             tentativeGScore = gScore[current] //get current gScore and add the cost to get to neighbor
-                + static_cast<long long>((
+                + static_cast<double>((
                     subnetAdjacencyMatrix //get distance to neighbor from current
                     [
                         subnetToIndexTable[current] //translate name to index
                     ]
-            [
-                subnetToIndexTable[neighbors[index]] //translate name to index
-            ]
-            / subnetSpeed[current])); //divide by speed to get cost
+                    [
+                        subnetToIndexTable[neighbors[index]] //translate name to index
+                    ]
+            /*/ subnetSpeed[current]*/)); //divide by speed to get cost
+
+            //std::cout << "GSCORE: "<<tentativeGScore << std::endl;
 
             if(tentativeGScore > gScore[neighbors[index]])
             {
@@ -218,7 +222,17 @@ bool CentralComputeNode::aStar(Route & route)
 
             gScore[neighbors[index]] = tentativeGScore;
 
-            fScore[neighbors[index]] = tentativeGScore + vehiclesAtSubnet[current].size();
+            fScore[neighbors[index]] = tentativeGScore 
+                + subnetAdjacencyMatrix //get distance to neighbor from current
+                [
+                    subnetToIndexTable[current] //translate name to index
+                ]
+                [
+                    subnetToIndexTable[neighbors[index]] //translate name to index
+                ] 
+                * (vehiclesAtSubnet[neighbors[index]].size() + vehiclesAtSubnet[current].size());
+
+                //std::cout << "FSCORE: " << fScore[neighbors[index]] << std::endl;
         }
 
     }
@@ -248,10 +262,10 @@ Route CentralComputeNode::reconstructPath
             [
                 subnetToIndexTable[current] //translate name to index
             ]
-        [
-            subnetToIndexTable[cameFrom[current]] //translate name to index
-        ]
-        / subnetSpeed[current])); //divide by speed to get cost
+            [
+                subnetToIndexTable[cameFrom[current]] //translate name to index
+            ]
+        /*/ subnetSpeed[current]*/)); //divide by speed to get cost
     }
     else
     {
@@ -262,8 +276,6 @@ Route CentralComputeNode::reconstructPath
 
     while (current != start && !current.empty())
     {
-        current = cameFrom[current];
-
         if (!cameFrom[current].empty())
         {
             cost = static_cast<double>((
@@ -274,12 +286,14 @@ Route CentralComputeNode::reconstructPath
             [
                 subnetToIndexTable[cameFrom[current]] //translate name to index
             ]
-            / subnetSpeed[current])); //divide by speed to get cost
+            /*/ subnetSpeed[current]*/)); //divide by speed to get cost
         }
         else
         {
             cost = 0;
         }
+
+        current = cameFrom[current];        
 
         std::cout << "current: " << current << ", " << cost << std::endl;
 
