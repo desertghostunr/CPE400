@@ -132,11 +132,7 @@ void Vehicle::requestRoute(CentralComputeNode & ccn)
 
     job.id = id;
 
-    ccn.getLock();
-    {
-        ccn.queueJob(job);
-    }
-    ccn.releaseLock();
+    ccn.queueJob(job);
 
     routeRequested = true;
 }
@@ -163,11 +159,16 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     node = route->front();
     route->pop_front();
 
-    ccn.getLock();
+    if(!route->empty())
     {
         success = ccn.changeRoad(id, sourceAddress, route->front().first);
     }
-    ccn.releaseLock();
+    else 
+    {
+        travelTimeLeft = 0;
+        return true;
+    }
+    
 
     if(!success)
     {

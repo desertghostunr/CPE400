@@ -80,7 +80,7 @@ int main(int argc, char * argv[])
     //initialize and start the cars
     for (index = 1; index < simulatorThreads.size(); index++)
     {
-        tStep = (rand() % 1500) + 100;
+        tStep = (rand() % 1500) + 250;
         simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), 
                                               std::ref(consoleLock), vehicles[index - 1], tStep);
     }
@@ -309,18 +309,20 @@ void WaitFor(long long timeMS)
 
 void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock) //I think we should add a feature that checks on a cars progress every once in a while
 {
-    std::cout << "CCN started." << std::endl;
+    consoleLock.getLock();
+    {
+        std::cout << "CCN started." << std::endl;
+    }
+    consoleLock.releaseLock();
 
     while (running) 
     {
         ccn.getLock();
-        {            
-            std::cout << "Directing traffic" << std::endl;
+        {
             ccn.directTraffic();
         }
         ccn.releaseLock();
-
-        WaitFor(75);
+        WaitFor(200);
     }
 }
 
@@ -329,7 +331,15 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
     
     bool started = false;
 
-    std::cout << "Vehicle " << car.getID() << " started." << std::endl;
+    bool routeRequested = false;
+
+    //std::cout << "My time step is " << timeStep << std::endl;
+
+    consoleLock.getLock();
+    {
+        std::cout << "Vehicle " << car.getID() << " started." << std::endl;
+    }
+    consoleLock.releaseLock();    
 
     car.getLock();
     {
@@ -355,6 +365,8 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
         {
             if (car.hasRoute())
             {
+                routeRequested = false;
+
                 //start moving to destination
                 if(!started)
                 {
@@ -375,29 +387,37 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                 {
                     consoleLock.getLock();
                     {
-                        std::cout << "Car " + car.getID() << " has reached " << car.getDest() << "." << std::endl;
+                        std::cout << "Car " + car.getID() << " is finished!" << std::endl;
                     }
                     consoleLock.releaseLock();
 
-                    break;
+                    car.releaseLock();
+
+                    return;
                 }
                 
                 if(!car.timeRemainingToNextDestination())
                 {
-                    if(car.tryRoadChange(ccn))
+                    ccn.getLock();
                     {
-                        consoleLock.getLock();
+                        if (car.tryRoadChange(ccn))
                         {
-                            std::cout << "Car " + car.getID() << " has reached " << car.getSource() << "." << std::endl;
+                            consoleLock.getLock();
+                            {
+                                std::cout << "Car " + car.getID() << " has reached " << car.getSource() << "." << std::endl;
+                            }
+                            consoleLock.releaseLock();
+                            car.setDepartTime();
                         }
-                        consoleLock.releaseLock();
-                        
-                        car.setDepartTime();
-                    }
+                    }                    
+                    ccn.releaseLock();
                 }                
             }
-            else
+            else if(!routeRequested)
             {
+
+                routeRequested = true;
+
                 //request a route
                 consoleLock.getLock();
                 {
@@ -405,7 +425,11 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                 }
                 consoleLock.releaseLock();
 
-                car.requestRoute(ccn);
+                ccn.getLock();
+                {
+                    car.requestRoute(ccn);
+                }
+                ccn.releaseLock();
             }
         }
         car.releaseLock();

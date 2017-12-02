@@ -1,7 +1,6 @@
 #include "CentralComputeNode.h"
 #include <unordered_set>
-#include <iostream> //for debug
-
+#include <iostream>
 #define _INFINITY 9999999
 
 template<typename Type>
@@ -63,35 +62,28 @@ void CentralComputeNode::queueJob(Job & job)
 
 bool CentralComputeNode::computeRoute(Route & route) 
 {
-    std::cout << "Compute route!" << std::endl;
     return aStar(route);
 }
 
 void CentralComputeNode::directTraffic()
 {
-    std::cout << "dT init vars" << std::endl;
     std::list<Job>::iterator jobIter;
     Job job;
     Route route;
-
-
-    std::cout << "dT run" << std::endl;
     
 
     if (jobs.empty()) 
     {
-        std::cout << "No jobs to do." << std::endl;
         return;
     }
 
     //fetch a job
     job = jobs.front();
 
-    //compute a route for the job
     route.start = job.start;
     route.dest = job.dest;
 
-    computeRoute(route);    
+    computeRoute(route);
 
     //for each vehicle that can use the route, send it the route
 
@@ -174,17 +166,19 @@ bool CentralComputeNode::aStar(Route & route)
 
     openSet.emplace(route.start);
 
-    gScore[route.start] = 0;
-    
+    gScore[route.start] = 0;    
 
     while(GetCheapestNode(openSet, fScore, current))
-    {        
+    {
+
         if(current == route.dest)
         {
             route = reconstructPath(cameFrom, current, route.start);
 
             return true;
         }
+
+        openSet.erase(current);
 
         closedSet.emplace(current);
 
@@ -263,7 +257,7 @@ Route CentralComputeNode::reconstructPath
     {
         cost = 0;
     }
-    
+    std::cout << "current: " << current << ", " << cost << std::endl;
     route.route.push_front(std::pair<std::string, double>(current, cost));
 
     while (current != start && !current.empty())
@@ -287,6 +281,8 @@ Route CentralComputeNode::reconstructPath
             cost = 0;
         }
 
+        std::cout << "current: " << current << ", " << cost << std::endl;
+
         route.route.push_front(std::pair<std::string, double>(current, cost));
     }
 
@@ -301,15 +297,11 @@ std::vector<std::string> CentralComputeNode::expandNode(std::string current)
     int currentAddr = subnetToIndexTable[current];
 
     for (iter = subnetToIndexTable.begin(); iter != subnetToIndexTable.end(); ++iter)
-    {
-        //same
-        if (iter->first == current)
-        {
-            continue;
-        }
+    {      
 
-        //not a neighbor
-        if (subnetAdjacencyMatrix[currentAddr][iter->second] < 0)
+        
+        //same or not a neighbor
+        if (subnetAdjacencyMatrix[currentAddr][iter->second] <= 0)
         {
             continue;
         }
