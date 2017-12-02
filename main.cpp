@@ -17,7 +17,7 @@
 //this runs the simulation to test our SDN protocol
 
 //reads in the input file
-bool FetchInput(std::string & fileName, CentralComputeNode &   ccn, std::vector<Vehicle> & cars);
+bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
 
 // end the simulator by joining all threads
 void EndSimulator(std::vector<std::thread> & simulatorThreads);
@@ -272,9 +272,9 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
 
             strStream >> capacity;
 
-            strStream >> speed;
+            //strStream >> speed;
 
-            ccn.setSubnetProperties(id, capacity, speed);
+            ccn.setSubnetProperties(id, capacity/*, speed*/);
         }
         else
         {
@@ -383,7 +383,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                 }
 
                 //if at dest, then complete
-                if (car.getNextDestination() == "" && !car.timeRemainingToNextDestination())
+                if (car.getNextDestination() == "")
                 {
                     consoleLock.getLock();
                     {

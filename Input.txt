@@ -1,12 +1,12 @@
 car a a c
 map 
 	a   b    c   d
-a   0   500  250 -1
-b   500 0    300  400
-c   250 300  0   -1
-d  -1   400  -1   0
+a   0   50  25   -1
+b   50  0    30  40
+c   25  30  0   -1
+d  -1   40  -1   0
 end_map
-road a 250 45
-road b 250 60
-road c 100 76
-road d 75  68
+road a 250
+road b 250
+road c 100
+road d 75

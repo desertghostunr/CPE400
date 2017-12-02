@@ -66,7 +66,7 @@ Class CentralComputeNode:
 
 ## Input Structure
 *Note: a -1 denotes not neighbors, 0 reserved for the same road
-*note: [d] = distance, [c] = capacity, [s] = speed
+*note: [d] = delta time in seconds, [c] = capacity
 
 ### start of file:
 car [id] [start] [stop]
@@ -78,4 +78,4 @@ map
 [id] -1   [d]  0
 end_map
 
-road [id] [c] [s]
+road [id] [c]

@@ -8,7 +8,7 @@ bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fS
 
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
-    subnetSpeed(), 
+    //subnetSpeed(), 
     subnetCapacity(), 
     vehiclesAtSubnet(), 
     vechiclesGoingToSubnet(), 
@@ -49,10 +49,10 @@ void CentralComputeNode::setMap(std::vector<std::vector<double> > & map)
     subnetAdjacencyMatrix = map;
 }
 
-void CentralComputeNode::setSubnetProperties(std::string & name, int capacity, double speed)
+void CentralComputeNode::setSubnetProperties(std::string & name, int capacity/*, double speed*/)
 {
     subnetCapacity[name] = capacity;
-    subnetSpeed[name] = speed;
+    //subnetSpeed[name] = speed;
 }
 
 void CentralComputeNode::queueJob(Job & job)
@@ -199,15 +199,17 @@ bool CentralComputeNode::aStar(Route & route)
             }
 
             tentativeGScore = gScore[current] //get current gScore and add the cost to get to neighbor
-                + static_cast<long long>((
+                + static_cast<double>((
                     subnetAdjacencyMatrix //get distance to neighbor from current
                     [
                         subnetToIndexTable[current] //translate name to index
                     ]
-            [
-                subnetToIndexTable[neighbors[index]] //translate name to index
-            ]
-            / subnetSpeed[current])); //divide by speed to get cost
+                    [
+                        subnetToIndexTable[neighbors[index]] //translate name to index
+                    ]
+            /*/ subnetSpeed[current]*/)); //divide by speed to get cost
+
+            //std::cout << "GSCORE: "<<tentativeGScore << std::endl;
 
             if(tentativeGScore > gScore[neighbors[index]])
             {
@@ -241,23 +243,23 @@ Route CentralComputeNode::reconstructPath
 
     route.start = start;
 
-    if (cameFrom[current] != start && !cameFrom[current].empty())
+    if (!cameFrom[current].empty())
     {
         cost = static_cast<double>((
             subnetAdjacencyMatrix //get distance to neighbor from current
             [
                 subnetToIndexTable[current] //translate name to index
             ]
-        [
-            subnetToIndexTable[cameFrom[current]] //translate name to index
-        ]
-        / subnetSpeed[current])); //divide by speed to get cost
+            [
+                subnetToIndexTable[cameFrom[current]] //translate name to index
+            ]
+        /*/ subnetSpeed[current]*/)); //divide by speed to get cost
     }
     else
     {
         cost = 0;
     }
-    std::cout << "current: " << current << ", " << cost << std::endl;
+    //std::cout << "current: " << current << ", " << cost << std::endl;
     route.route.push_front(std::pair<std::string, double>(current, cost));
 
     while (current != start && !current.empty())
@@ -271,17 +273,17 @@ Route CentralComputeNode::reconstructPath
                 [
                     subnetToIndexTable[current] //translate name to index
                 ]
-            [
-                subnetToIndexTable[cameFrom[current]] //translate name to index
-            ]
-            / subnetSpeed[current])); //divide by speed to get cost
+                [
+                    subnetToIndexTable[cameFrom[current]] //translate name to index
+                ]
+            /*/ subnetSpeed[current]*/)); //divide by speed to get cost
         }
         else
         {
             cost = 0;
         }
 
-        std::cout << "current: " << current << ", " << cost << std::endl;
+        //std::cout << "current: " << current << ", " << cost << std::endl;
 
         route.route.push_front(std::pair<std::string, double>(current, cost));
     }
