@@ -1,6 +1,5 @@
 #include "CentralComputeNode.h"
-#include <unordered_set>
-#include <iostream>
+//#include <iostream>
 #include <atomic>
 #define _INFINITY 9999999
 
@@ -105,6 +104,8 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
         {
             counter = (int)vehiclesAtSubnet[pathIter->first].size();
             minCapacity = subnetCapacity[pathIter->first];
+
+            //std::cout << "mc" << minCapacity << counter << std::endl;
         }
     }
 
@@ -145,24 +146,38 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
 void CentralComputeNode::joinNetwork(Vehicle * vehicle)
 {
     vehicles[vehicle->getID()] = vehicle;
-    vehiclesAtSubnet[vehicle->getSource()].push_front(vehicle->getID());
+    vehiclesAtSubnet[vehicle->getSource()].emplace(vehicle->getID());
 }
 
 void CentralComputeNode::leaveNetwork(const std::string &id, const std::string &lastNode)
 {
     vehicles.erase(id);
-    vehiclesAtSubnet[lastNode].remove(id);
+    vehiclesAtSubnet[lastNode].erase(id);
 }
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
 {
-    if(vehiclesAtSubnet[newRoad].size() < (unsigned)subnetCapacity[newRoad])
+    if (currentRoad == newRoad)
     {
-        vehiclesAtSubnet[newRoad].push_back(id);
-        vehiclesAtSubnet[currentRoad].remove(id);
-
+        //std::cout << id << newRoad << currentRoad << std::endl;
         return true;
     }
+    
+    if(vehiclesAtSubnet[newRoad].size() < (unsigned int)subnetCapacity[newRoad])
+    {
+        vehiclesAtSubnet[newRoad].emplace(id);
+        vehiclesAtSubnet[currentRoad].erase(id);
+
+        //std::cout << id << " " << vehiclesAtSubnet[currentRoad].count(id) << std::endl;
+
+        return true;
+    }/*
+    std::cout <<"BROKE" << vehiclesAtSubnet[newRoad].size() << currentRoad << newRoad << (unsigned int)subnetCapacity[newRoad] << id <<std::endl;
+
+    for(std::unordered_set<std::string>::iterator iter = vehiclesAtSubnet[newRoad].begin(); iter != vehiclesAtSubnet[newRoad].end(); ++iter)
+    {
+        std::cout << *iter << std::endl;
+    }*/
 
     return false;
 }

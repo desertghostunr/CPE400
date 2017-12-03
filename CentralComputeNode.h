@@ -1,6 +1,7 @@
 #ifndef CENTRALCOMPUTENODE_H
 #define CENTRALCOMPUTENODE_H
 
+#include <unordered_set>
 
 #include <vector>
 #include <list>
@@ -51,7 +52,7 @@ private:
 
     std::map<std::string, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
     std::map<std::string, int> subnetCapacity; // the number of cars that fit on a subnet
-    std::map<std::string, std::list< std::string > > vehiclesAtSubnet; //a list of vehicles at each subnet
+    std::map<std::string, std::unordered_set< std::string > > vehiclesAtSubnet; //a list of vehicles at each subnet
 
     //this graph has the cost of a subnet in estimated time to travel between subnets
     std::vector< std::vector< double > > subnetAdjacencyMatrix; //the graph that defines the city

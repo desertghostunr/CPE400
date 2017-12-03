@@ -353,8 +353,6 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
         {
             if (car.hasRoute())
             {
-                routeRequested = false;
-
                 //start moving to destination
                 if(!started)
                 {
@@ -383,7 +381,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
 
                     ccn.getLock();
                     {
-                        ccn.leaveNetwork(car.getID(), car.getDest());
+                        ccn.leaveNetwork(car.getID(), car.getSource());
                     }
                     ccn.releaseLock();
 
@@ -408,9 +406,9 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                         }
                         else
                         {
-                            car.requestRoute(ccn);
-
                             car.clearRoute();
+
+                            routeRequested = false;
                         }
                     }                    
                     ccn.releaseLock();

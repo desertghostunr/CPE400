@@ -174,12 +174,12 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
 
     if(!route->empty())
     {
-        success = ccn.changeRoad(id, sourceAddress, route->front().first);
+        success = ccn.changeRoad(id, sourceAddress, node.first);
     }
     else 
-    {
+    {        
         travelTimeLeft = 0;
-        success = true;
+        return true;
     }
     
 

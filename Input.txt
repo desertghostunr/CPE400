@@ -4,12 +4,12 @@ car c c a
 car d d c
 map 
     a   b    c   d
-a   0   50  -1 -1
-b   50 0    30  40
-c   -1 30  0   -1
-d  -1   40  -1   0
+a   0   5  -1 -1
+b   5 0    3  4
+c   -1 3  0   -1
+d  -1   4  -1   0
 end_map
-road a 3
-road b 3
-road c 3
-road d 3
+road a 2
+road b 2
+road c 2
+road d 2
