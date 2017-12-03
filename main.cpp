@@ -375,7 +375,9 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                 {
                     consoleLock.getLock();
                     {
-                        std::cout << "Car " + car.getID() << " is finished!" << std::endl;                        
+                        std::cout << "Car " + car.getID() << " is finished in: " 
+                            << std::chrono::duration_cast<std::chrono::seconds>(car.getTotalTime()).count() 
+                            << " seconds." << std::endl;
                     }
                     consoleLock.releaseLock();
 
@@ -406,7 +408,6 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                         }
                         else
                         {
-                            started = false;
                             car.requestRoute(ccn);
 
                             car.clearRoute();

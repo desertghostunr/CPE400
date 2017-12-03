@@ -69,7 +69,7 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
     Job job;
     Route route;
 
-    int counter, minCapacity = _INFINITY;
+    int counter = 0, minCapacity = _INFINITY;
     
     std::list<std::pair<std::string, double> >::iterator pathIter;
 
@@ -103,17 +103,18 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
     {
         if(subnetCapacity[pathIter->first] < minCapacity)
         {
+            counter = (int)vehiclesAtSubnet[pathIter->first].size();
             minCapacity = subnetCapacity[pathIter->first];
         }
     }
+
+    //std::cout << counter << job.start << job.dest << minCapacity << job.id << std::endl;
 
     //for each vehicle that can use the route, send it the route
 
     jobIter = jobs.begin();
 
-    counter = 0;
-
-    while (jobIter != jobs.end() && counter < minCapacity)
+    while (jobIter != jobs.end() && counter <= minCapacity)
     {
         job = *jobIter;
 
@@ -155,7 +156,7 @@ void CentralComputeNode::leaveNetwork(const std::string &id, const std::string &
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
 {
-    if(vehiclesAtSubnet[newRoad].size() <= (unsigned)subnetCapacity[newRoad])
+    if(vehiclesAtSubnet[newRoad].size() < (unsigned)subnetCapacity[newRoad])
     {
         vehiclesAtSubnet[newRoad].push_back(id);
         vehiclesAtSubnet[currentRoad].remove(id);
@@ -300,7 +301,7 @@ Route CentralComputeNode::reconstructPath
     {
         cost = 0;
     }
-    std::cout << "current: " << current << ", " << cost << std::endl;
+    //std::cout << "current: " << current << ", " << cost << std::endl;
     route.route.push_front(std::pair<std::string, double>(current, cost));
 
     while (current != start && !current.empty())
@@ -324,7 +325,7 @@ Route CentralComputeNode::reconstructPath
 
         current = cameFrom[current];        
 
-        std::cout << "current: " << current << ", " << cost << std::endl;
+        //std::cout << "current: " << current << ", " << cost << std::endl;
 
         route.route.push_front(std::pair<std::string, double>(current, cost));
     }

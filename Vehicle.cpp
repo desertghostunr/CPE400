@@ -1,6 +1,6 @@
 #ifndef VEHICLE_CPP
 #define VEHICLE_CPP
-#include <iostream> //debug
+//#include <iostream> //debug
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
