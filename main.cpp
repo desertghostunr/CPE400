@@ -406,6 +406,13 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                         }
                         else
                         {
+                            consoleLock.getLock();
+                            {
+                                std::cout << "Car " + car.getID() << " has failed to turn on to "
+                                    << car.getNextDestination() << "." << std::endl;
+                            }
+                            consoleLock.releaseLock();
+
                             car.clearRoute();
 
                             routeRequested = false;

@@ -1,6 +1,6 @@
 #include "CentralComputeNode.h"
-//#include <iostream>
 #include <atomic>
+
 #define _INFINITY 9999999
 
 template<typename Type>
@@ -104,12 +104,8 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
         {
             counter = (int)vehiclesAtSubnet[pathIter->first].size();
             minCapacity = subnetCapacity[pathIter->first];
-
-            //std::cout << "mc" << minCapacity << counter << std::endl;
         }
     }
-
-    //std::cout << counter << job.start << job.dest << minCapacity << job.id << std::endl;
 
     //for each vehicle that can use the route, send it the route
 
@@ -159,7 +155,6 @@ bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad,
 {
     if (currentRoad == newRoad)
     {
-        //std::cout << id << newRoad << currentRoad << std::endl;
         return true;
     }
     
@@ -168,16 +163,8 @@ bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad,
         vehiclesAtSubnet[newRoad].emplace(id);
         vehiclesAtSubnet[currentRoad].erase(id);
 
-        //std::cout << id << " " << vehiclesAtSubnet[currentRoad].count(id) << std::endl;
-
         return true;
-    }/*
-    std::cout <<"BROKE" << vehiclesAtSubnet[newRoad].size() << currentRoad << newRoad << (unsigned int)subnetCapacity[newRoad] << id <<std::endl;
-
-    for(std::unordered_set<std::string>::iterator iter = vehiclesAtSubnet[newRoad].begin(); iter != vehiclesAtSubnet[newRoad].end(); ++iter)
-    {
-        std::cout << *iter << std::endl;
-    }*/
+    }
 
     return false;
 }
@@ -208,7 +195,7 @@ bool CentralComputeNode::aStar(Route & route)
         gScore[subnetIter->first] = _INFINITY;
     }
 
-    fScore[route.start] = vehiclesAtSubnet[route.start].size(); //heuristic
+    fScore[route.start] = 0;
 
 
     openSet.emplace(route.start);
@@ -253,10 +240,7 @@ bool CentralComputeNode::aStar(Route & route)
                     ]
                     [
                         subnetToIndexTable[neighbors[index]] //translate name to index
-                    ]
-            /*/ subnetSpeed[current]*/)); //divide by speed to get cost
-
-            //std::cout << "GSCORE: "<<tentativeGScore << std::endl;
+                    ])); 
 
             if(tentativeGScore > gScore[neighbors[index]])
             {
@@ -276,8 +260,6 @@ bool CentralComputeNode::aStar(Route & route)
                     subnetToIndexTable[neighbors[index]] //translate name to index
                 ] 
                 * (vehiclesAtSubnet[neighbors[index]].size() + vehiclesAtSubnet[current].size());
-
-                //std::cout << "FSCORE: " << fScore[neighbors[index]] << std::endl;
         }
 
     }
@@ -309,14 +291,13 @@ Route CentralComputeNode::reconstructPath
             ]
             [
                 subnetToIndexTable[cameFrom[current]] //translate name to index
-            ]
-        /*/ subnetSpeed[current]*/)); //divide by speed to get cost
+            ])); 
     }
     else
     {
         cost = 0;
     }
-    //std::cout << "current: " << current << ", " << cost << std::endl;
+
     route.route.push_front(std::pair<std::string, double>(current, cost));
 
     while (current != start && !current.empty())
@@ -330,8 +311,7 @@ Route CentralComputeNode::reconstructPath
                 ]
                 [
                     subnetToIndexTable[cameFrom[current]] //translate name to index
-                ]
-            /*/ subnetSpeed[current]*/)); //divide by speed to get cost
+                ])); 
         }
         else
         {
@@ -340,7 +320,6 @@ Route CentralComputeNode::reconstructPath
 
         current = cameFrom[current];        
 
-        //std::cout << "current: " << current << ", " << cost << std::endl;
 
         route.route.push_front(std::pair<std::string, double>(current, cost));
     }

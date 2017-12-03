@@ -1,6 +1,6 @@
 #ifndef VEHICLE_CPP
 #define VEHICLE_CPP
-//#include <iostream> //debug
+
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
@@ -167,7 +167,6 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     std::pair<std::string, double> node;
     bool success;
 
-    //std::cout << sourceAddress << " " << route->front().first << std::endl;
 
     node = route->front();
     route->pop_front();
