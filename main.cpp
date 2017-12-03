@@ -373,6 +373,9 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                 {
                     consoleLock.getLock();
                     {
+                        std::cout << "Car " + car.getID() << " has reached "
+                            << car.getDest() << "." << std::endl;
+
                         std::cout << "Car " + car.getID() << " is finished in: " 
                             << std::chrono::duration_cast<std::chrono::seconds>(car.getTotalTime()).count() 
                             << " seconds." << std::endl;
