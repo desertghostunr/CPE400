@@ -165,7 +165,6 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     }
     else 
     {
-        //std::cout << "Empty route!" << std::endl;
         travelTimeLeft = 0;
         success = true;
     }
@@ -177,10 +176,10 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     }
     else 
     {
-        //std::cout << node.first << " Time to go: " << node.second << std::endl;
         travelTimeLeft = node.second;
         sourceAddress = node.first;
     }
+
     return success;
 }
 
