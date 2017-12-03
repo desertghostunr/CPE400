@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <atomic>
 #include "Vehicle.h"
 #include "ThreadSafeObject.h"
 
@@ -32,10 +33,14 @@ public:
 
     bool computeRoute(Route & route);
 
-    void directTraffic();
+    void directTraffic(std::atomic_bool &running);
 
     void joinNetwork(Vehicle* vehicle);
+<<<<<<< HEAD
     void leaveNetwork(const std::string &id);
+=======
+    void leaveNetwork(const std::string &id, const std::string &lastNode);
+>>>>>>> 3d3c93d0df821c38e8000d1d2c14bd0a1df655bf
 
     bool changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad);
 
@@ -49,10 +54,8 @@ private:
     std::vector<std::string> expandNode(std::string current);
 
     std::map<std::string, Vehicle*> vehicles; //maps the id of a vehicle to the actual vehicle
-    //std::map<std::string, double> subnetSpeed; //in m/s
     std::map<std::string, int> subnetCapacity; // the number of cars that fit on a subnet
     std::map<std::string, std::list< std::string > > vehiclesAtSubnet; //a list of vehicles at each subnet
-    std::map<std::string, std::list< std::string > > vechiclesGoingToSubnet; //a list of vehicles going to a given subnet
 
     //this graph has the cost of a subnet in estimated time to travel between subnets
     std::vector< std::vector< double > > subnetAdjacencyMatrix; //the graph that defines the city

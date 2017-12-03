@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 car BMW Virginia-Kietzke Longley-Airway
 
 # When adding a new intersection the name of the point is supplied
@@ -51,3 +52,20 @@ neighbor [7] 15
 intersect Airway-Mccarran       #9
 neighbor [8] 30 
 neighbor [3] 30
+=======
+car a a c
+car b b c
+car c c a
+car d d c
+map 
+    a   b    c   d
+a   0   50  -1 -1
+b   50 0    30  40
+c   -1 30  0   -1
+d  -1   40  -1   0
+end_map
+road a 3
+road b 3
+road c 3
+road d 3
+>>>>>>> 3d3c93d0df821c38e8000d1d2c14bd0a1df655bf

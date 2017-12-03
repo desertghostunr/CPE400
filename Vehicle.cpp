@@ -1,6 +1,6 @@
 #ifndef VEHICLE_CPP
 #define VEHICLE_CPP
-#include <iostream> //debug
+//#include <iostream> //debug
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
@@ -79,6 +79,16 @@ bool Vehicle::timeRemainingToNextDestination() const
     return false;
 }
 
+void Vehicle::clearRoute()
+{
+    if (route != NULL)
+    {
+        delete route;
+    }
+
+    route = NULL;
+}
+
 bool Vehicle::hasRoute() const
 {
     return (route != NULL);
@@ -153,8 +163,11 @@ void Vehicle::setRoute(std::list<std::pair<std::string, double>> newRoute)
 
 bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
 {
+    Job job;
     std::pair<std::string, double> node;
     bool success;
+
+    //std::cout << sourceAddress << " " << route->front().first << std::endl;
 
     node = route->front();
     route->pop_front();
@@ -165,7 +178,6 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     }
     else 
     {
-        //std::cout << "Empty route!" << std::endl;
         travelTimeLeft = 0;
         success = true;
     }
@@ -177,10 +189,10 @@ bool Vehicle::tryRoadChange(CentralComputeNode & ccn)
     }
     else 
     {
-        //std::cout << node.first << " Time to go: " << node.second << std::endl;
         travelTimeLeft = node.second;
-        sourceAddress = node.first;
+        sourceAddress = node.first;        
     }
+
     return success;
 }
 

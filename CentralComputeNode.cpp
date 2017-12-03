@@ -1,6 +1,7 @@
 #include "CentralComputeNode.h"
 #include <unordered_set>
 #include <iostream>
+#include <atomic>
 #define _INFINITY 9999999
 
 template<typename Type>
@@ -8,10 +9,8 @@ bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fS
 
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
-    //subnetSpeed(), 
     subnetCapacity(), 
     vehiclesAtSubnet(), 
-    vechiclesGoingToSubnet(), 
     subnetAdjacencyMatrix(), 
     subnetToIndexTable(),
     jobs()
@@ -28,7 +27,7 @@ void CentralComputeNode::buildSubnetToIndexTable(std::vector<std::string> & subn
 {
     int index;
 
-    for(index = 0; index < subnets.size(); index++)
+    for(index = 0; (unsigned)index < subnets.size(); index++)
     {
         subnetToIndexTable[subnets[index]] = index;
     }
@@ -49,10 +48,9 @@ void CentralComputeNode::setMap(std::vector<std::vector<double> > & map)
     subnetAdjacencyMatrix = map;
 }
 
-void CentralComputeNode::setSubnetProperties(std::string & name, int capacity/*, double speed*/)
+void CentralComputeNode::setSubnetProperties(std::string & name, int capacity)
 {
     subnetCapacity[name] = capacity;
-    //subnetSpeed[name] = speed;
 }
 
 void CentralComputeNode::queueJob(Job & job)
@@ -65,16 +63,24 @@ bool CentralComputeNode::computeRoute(Route & route)
     return aStar(route);
 }
 
-void CentralComputeNode::directTraffic()
+void CentralComputeNode::directTraffic(std::atomic_bool &running)
 {
     std::list<Job>::iterator jobIter;
     Job job;
     Route route;
 
-    int counter;
+    int counter = 0, minCapacity = _INFINITY;
     
+    std::list<std::pair<std::string, double> >::iterator pathIter;
 
-    if (jobs.empty()) 
+
+    if (vehicles.empty())
+    {
+        running = false;
+        return;
+    }
+
+    if (jobs.empty())
     {
         return;
     }
@@ -87,11 +93,28 @@ void CentralComputeNode::directTraffic()
 
     computeRoute(route);
 
+    if(route.route.empty())
+    {
+        return;
+    }
+
+    //find the minimum capacity
+    for(pathIter = route.route.begin(); pathIter != route.route.end(); ++pathIter)
+    {
+        if(subnetCapacity[pathIter->first] < minCapacity)
+        {
+            counter = (int)vehiclesAtSubnet[pathIter->first].size();
+            minCapacity = subnetCapacity[pathIter->first];
+        }
+    }
+
+    //std::cout << counter << job.start << job.dest << minCapacity << job.id << std::endl;
+
     //for each vehicle that can use the route, send it the route
 
     jobIter = jobs.begin();
 
-    while (jobIter != jobs.end())
+    while (jobIter != jobs.end() && counter <= minCapacity)
     {
         job = *jobIter;
 
@@ -100,9 +123,10 @@ void CentralComputeNode::directTraffic()
         {
             if (vehicles[job.id] != NULL)
             {
-                vehicles[job.id]->getLock(); 
+                vehicles[job.id]->getLock();
                 {
-                    vehicles[job.id]->setRoute(route.route); 
+                    vehicles[job.id]->setRoute(route.route);
+                    counter++;
                 }
                 vehicles[job.id]->releaseLock();
 
@@ -124,9 +148,15 @@ void CentralComputeNode::joinNetwork(Vehicle * vehicle)
     vehiclesAtSubnet[vehicle->getSource()].push_front(vehicle->getID());
 }
 
+void CentralComputeNode::leaveNetwork(const std::string &id, const std::string &lastNode)
+{
+    vehicles.erase(id);
+    vehiclesAtSubnet[lastNode].remove(id);
+}
+
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
 {
-    if(vehiclesAtSubnet[newRoad].size() < subnetCapacity[newRoad])
+    if(vehiclesAtSubnet[newRoad].size() < (unsigned)subnetCapacity[newRoad])
     {
         vehiclesAtSubnet[newRoad].push_back(id);
         vehiclesAtSubnet[currentRoad].remove(id);
@@ -186,7 +216,7 @@ bool CentralComputeNode::aStar(Route & route)
 
         neighbors = expandNode(current);
 
-        for(index = 0; index < neighbors.size(); index++)
+        for(index = 0; (unsigned)index < neighbors.size(); index++)
         {
             //if already evaluated
             if(closedSet.count(neighbors[index]) > 0)
@@ -271,7 +301,7 @@ Route CentralComputeNode::reconstructPath
     {
         cost = 0;
     }
-    std::cout << "current: " << current << ", " << cost << std::endl;
+    //std::cout << "current: " << current << ", " << cost << std::endl;
     route.route.push_front(std::pair<std::string, double>(current, cost));
 
     while (current != start && !current.empty())
@@ -283,9 +313,9 @@ Route CentralComputeNode::reconstructPath
                 [
                     subnetToIndexTable[current] //translate name to index
                 ]
-            [
-                subnetToIndexTable[cameFrom[current]] //translate name to index
-            ]
+                [
+                    subnetToIndexTable[cameFrom[current]] //translate name to index
+                ]
             /*/ subnetSpeed[current]*/)); //divide by speed to get cost
         }
         else
@@ -295,7 +325,7 @@ Route CentralComputeNode::reconstructPath
 
         current = cameFrom[current];        
 
-        std::cout << "current: " << current << ", " << cost << std::endl;
+        //std::cout << "current: " << current << ", " << cost << std::endl;
 
         route.route.push_front(std::pair<std::string, double>(current, cost));
     }
