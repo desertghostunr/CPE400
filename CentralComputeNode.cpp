@@ -11,7 +11,6 @@ CentralComputeNode::CentralComputeNode()
     //subnetSpeed(), 
     subnetCapacity(), 
     vehiclesAtSubnet(), 
-    vechiclesGoingToSubnet(), 
     subnetAdjacencyMatrix(), 
     subnetToIndexTable(),
     jobs()
@@ -122,6 +121,12 @@ void CentralComputeNode::joinNetwork(Vehicle * vehicle)
 {
     vehicles[vehicle->getID()] = vehicle;
     vehiclesAtSubnet[vehicle->getSource()].push_front(vehicle->getID());
+}
+
+void CentralComputeNode::leaveNetwork(const std::string &id)
+{
+    vehicles.erase(id);
+    vehiclesAtSubnet.erase(id);
 }
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)

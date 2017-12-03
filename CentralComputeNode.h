@@ -35,6 +35,7 @@ public:
     void directTraffic();
 
     void joinNetwork(Vehicle* vehicle);
+    void leaveNetwork(const std::string &id);
 
     bool changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad);
 
@@ -51,7 +52,6 @@ private:
     //std::map<std::string, double> subnetSpeed; //in m/s
     std::map<std::string, int> subnetCapacity; // the number of cars that fit on a subnet
     std::map<std::string, std::list< std::string > > vehiclesAtSubnet; //a list of vehicles at each subnet
-    std::map<std::string, std::list< std::string > > vechiclesGoingToSubnet; //a list of vehicles going to a given subnet
 
     //this graph has the cost of a subnet in estimated time to travel between subnets
     std::vector< std::vector< double > > subnetAdjacencyMatrix; //the graph that defines the city
