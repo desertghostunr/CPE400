@@ -8,7 +8,7 @@ b   50 0    30  40
 c   -1 30  0   -1
 d  -1   40  -1   0
 end_map
-road a 250 45
-road b 250 60
-road c 100 76
-road d 75  68
+road a 2
+road b 2
+road c 2
+road d 2

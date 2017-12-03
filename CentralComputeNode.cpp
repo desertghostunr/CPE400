@@ -155,7 +155,7 @@ void CentralComputeNode::leaveNetwork(const std::string &id)
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
 {
-    if(vehiclesAtSubnet[newRoad].size() < (unsigned)subnetCapacity[newRoad])
+    if(vehiclesAtSubnet[newRoad].size() <= (unsigned)subnetCapacity[newRoad])
     {
         vehiclesAtSubnet[newRoad].push_back(id);
         vehiclesAtSubnet[currentRoad].remove(id);
