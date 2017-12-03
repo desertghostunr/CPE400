@@ -68,11 +68,11 @@ void CentralComputeNode::directTraffic()
     Job job;
     Route route;
 
-    int counter, minCapacity;
+    int counter, minCapacity = _INFINITY;
     
     std::list<std::pair<std::string, double> >::iterator pathIter;
 
-    if (jobs.empty()) 
+    if (jobs.empty())
     {
         return;
     }
@@ -84,6 +84,20 @@ void CentralComputeNode::directTraffic()
     route.dest = job.dest;
 
     computeRoute(route);
+
+    if(route.route.empty())
+    {
+        return;
+    }
+
+    //find the minimum capacity
+    for(pathIter = route.route.begin(); pathIter != route.route.end(); ++pathIter)
+    {
+        if(subnetCapacity[pathIter->first] < minCapacity)
+        {
+            minCapacity = subnetCapacity[pathIter->first];
+        }
+    }
 
     //for each vehicle that can use the route, send it the route
 
