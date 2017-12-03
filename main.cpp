@@ -93,7 +93,7 @@ int main(int argc, char * argv[])
     }
     consoleLock.releaseLock();
 
-    c = getchar();
+    ComputeNode(ccn, running, consoleLock);
 
     consoleLock.getLock(); 
     {
@@ -112,6 +112,7 @@ int main(int argc, char * argv[])
     return 0;
 }
 
+// Functions ==================================================================
 bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars)
 {
     std::stringstream strStream;
@@ -123,8 +124,9 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
     std::string id, start, dest;
 
     std::vector<std::string> roadIDs;
-
     std::vector<std::vector<double> > map;
+
+    std::map<std::string, std::map<std::string, int> > cityMap;
 
     int index, row, col;
 
@@ -142,7 +144,7 @@ bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Ve
         return false;
     }
 
-    std::cout << "Reading in the files contents." << std::endl;
+    std::cout << "Reading file..." << std::endl;
 
     // get line and convert it's contents
     while(std::getline(fStream, buffer))
@@ -319,10 +321,11 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
     {
         ccn.getLock();
         {
-            ccn.directTraffic();
+            ccn.directTraffic(running);
         }
         ccn.releaseLock();
         WaitFor(50);
+        std::cout << "running? " << running << std::endl;
     }
 }
 
@@ -388,6 +391,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                     consoleLock.getLock();
                     {
                         std::cout << "Car " + car.getID() << " is finished!" << std::endl;
+                        ccn.leaveNetwork(car.getID());
                     }
                     consoleLock.releaseLock();
 

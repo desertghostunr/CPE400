@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <atomic>
 #include "Vehicle.h"
 #include "ThreadSafeObject.h"
 
@@ -32,7 +33,7 @@ public:
 
     bool computeRoute(Route & route);
 
-    void directTraffic();
+    void directTraffic(std::atomic_bool &running);
 
     void joinNetwork(Vehicle* vehicle);
     void leaveNetwork(const std::string &id);
