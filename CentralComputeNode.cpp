@@ -73,14 +73,16 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
     
     std::list<std::pair<std::string, double> >::iterator pathIter;
 
-    if (jobs.empty())
+
+    if (vehicles.empty())
     {
+        running = false;
         return;
     }
 
-    if(vehicles.empty())
+    if (jobs.empty())
     {
-        running = false;
+        return;
     }
 
     //fetch a job

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <cstdio>
 #include <cstdlib>
 #include <chrono>
 #include <thread>
@@ -67,42 +66,32 @@ int main(int argc, char * argv[])
     }
 
     //start sim in another thread
-    simulatorThreads.resize(vehicles.size() + 1);
+    simulatorThreads.resize(vehicles.size());
     
 
     std::cout << "Starting the simulator." << std::endl << std::endl;
 
     //initialize and start the compute node
-    simulatorThreads[0] = std::thread(ComputeNode, std::ref(ccn), std::ref(running), std::ref(consoleLock));
 
     srand((unsigned)time(0));
 
     //initialize and start the cars
-    for (index = 1; index < simulatorThreads.size(); index++)
+    for (index = 0; index < simulatorThreads.size(); index++)
     {
         tStep = (rand() % 1500) + 250;
         simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), 
-                                              std::ref(consoleLock), vehicles[index - 1], tStep);
+                                              std::ref(consoleLock), std::ref(vehicles[index]), tStep);
     }
 
-   // ComputeNode(ccn, std::ref(running), std::ref(consoleLock));
+    WaitFor(2000);
 
-    consoleLock.getLock(); 
-    {
-        std::cout << "Press enter to end the simulator." << std::endl << std::endl;
-    }
-    consoleLock.releaseLock();
-
-    ComputeNode(ccn, running, consoleLock);
+    ComputeNode(ccn, std::ref(running), std::ref(consoleLock));
 
     consoleLock.getLock(); 
     {
         std::cout << "Terminating the simulator." << std::endl << std::endl;
     }
     consoleLock.releaseLock();
-
-    //after keyboard input end the simulator
-    running = false;
 
     EndSimulator(simulatorThreads);
     
@@ -309,7 +298,7 @@ void WaitFor(long long timeMS)
 }
 
 
-void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock) //I think we should add a feature that checks on a cars progress every once in a while
+void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock)
 {
     consoleLock.getLock();
     {
@@ -321,22 +310,19 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
     {
         ccn.getLock();
         {
-            ccn.directTraffic(running);
+            ccn.directTraffic(std::ref(running));
         }
         ccn.releaseLock();
         WaitFor(50);
-        std::cout << "running? " << running << std::endl;
     }
 }
 
-void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle car, long long timeStep) // need to add init param
+void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle car, long long timeStep) 
 {
     
     bool started = false;
 
     bool routeRequested = false;
-
-    //std::cout << "My time step is " << timeStep << std::endl;
 
     consoleLock.getLock();
     {
@@ -390,10 +376,15 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                 {
                     consoleLock.getLock();
                     {
-                        std::cout << "Car " + car.getID() << " is finished!" << std::endl;
-                        ccn.leaveNetwork(car.getID());
+                        std::cout << "Car " + car.getID() << " is finished!" << std::endl;                        
                     }
                     consoleLock.releaseLock();
+
+                    ccn.getLock();
+                    {
+                        ccn.leaveNetwork(car.getID());
+                    }
+                    ccn.releaseLock();
 
                     car.releaseLock();
 
