@@ -313,7 +313,6 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
             ccn.directTraffic(std::ref(running));
         }
         ccn.releaseLock();
-        WaitFor(50);
     }
 }
 

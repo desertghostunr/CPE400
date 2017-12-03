@@ -27,7 +27,7 @@ void CentralComputeNode::buildSubnetToIndexTable(std::vector<std::string> & subn
 {
     int index;
 
-    for(index = 0; index < subnets.size(); index++)
+    for(index = 0; (unsigned)index < subnets.size(); index++)
     {
         subnetToIndexTable[subnets[index]] = index;
     }
@@ -155,7 +155,7 @@ void CentralComputeNode::leaveNetwork(const std::string &id)
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
 {
-    if(vehiclesAtSubnet[newRoad].size() < subnetCapacity[newRoad])
+    if(vehiclesAtSubnet[newRoad].size() < (unsigned)subnetCapacity[newRoad])
     {
         vehiclesAtSubnet[newRoad].push_back(id);
         vehiclesAtSubnet[currentRoad].remove(id);
@@ -215,7 +215,7 @@ bool CentralComputeNode::aStar(Route & route)
 
         neighbors = expandNode(current);
 
-        for(index = 0; index < neighbors.size(); index++)
+        for(index = 0; (unsigned)index < neighbors.size(); index++)
         {
             //if already evaluated
             if(closedSet.count(neighbors[index]) > 0)
