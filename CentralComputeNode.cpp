@@ -1,6 +1,7 @@
 #include "CentralComputeNode.h"
 #include <unordered_set>
 #include <iostream>
+#include <atomic>
 #define _INFINITY 9999999
 
 template<typename Type>
@@ -62,7 +63,7 @@ bool CentralComputeNode::computeRoute(Route & route)
     return aStar(route);
 }
 
-void CentralComputeNode::directTraffic()
+void CentralComputeNode::directTraffic(std::atomic_bool &running)
 {
     std::list<Job>::iterator jobIter;
     Job job;
@@ -75,6 +76,11 @@ void CentralComputeNode::directTraffic()
     if (jobs.empty())
     {
         return;
+    }
+
+    if(vehicles.empty())
+    {
+        running = false;
     }
 
     //fetch a job
