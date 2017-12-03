@@ -1,27 +1,53 @@
-<<<<<<< HEAD
-car a a c
-map 
-	a   b    c   d
-a   0   500  250 -1
-b   500 0    300  400
-c   250 300  0   -1
-d  -1   400  -1   0
-end_map
-road a 250 45
-road b 250 60
-road c 100 76
-road d 75  68
-=======
-car a a c
-map 
-	a   b    c   d
-a   0   50  25   -1
-b   50  0    30  40
-c   25  30  0   -1
-d  -1   40  -1   0
-end_map
-road a 250
-road b 250
-road c 100
-road d 75
->>>>>>> 72e52caab250c95093b174ce3811d6810cfad358
+car BMW Virginia-Kietzke Longley-Airway
+
+# When adding a new intersection the name of the point is supplied
+# All adjacent nodes to it must follow immediately with the 'neighbor' keyword
+# A neighbor can be referenced either by giving its name, which must match the
+# corresponding nodes name exactly, or by giving a value indicated by its order
+# given. Each neighbor must also contain the time value between the nodes.
+# All time is denoted in [seconds]
+# 
+# intersect a
+# neighbor b 15
+# neighbor [3] 15   -> denotes the third node, c
+#
+# intersect b
+#intersect c
+
+intersect Virginia-Kietze       #1 
+neighbor [2] 25 
+neighbor [3] 15
+
+intersect Kietzke-Mccarran      #2
+neighbor [5] 20 
+neighbor [1] 25
+
+intersect Virginia-Mccarran     #3
+neighbor [2] 10  
+neighbor [9] 30  
+neighbor [1] 15
+
+intersect Virginia-Neil         #4
+neighbor [6] 60 
+neighbor [3] 20 
+neighbor [5] 15
+
+intersect Kietzke-Neil          #5
+neighbor [4] 15 
+neighbor [2] 20
+
+intersect Virginia-Longley      #6
+neighbor [7] 45  
+neighbor [4] 60
+
+intersect Longley-Airway        #7
+neighbor [8] 15 
+neighbor [6] 45
+
+intersect Longley-Mccarran      #8
+neighbor [9] 30 
+neighbor [7] 15
+
+intersect Airway-Mccarran       #9
+neighbor [8] 30 
+neighbor [3] 30
