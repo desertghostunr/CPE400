@@ -312,9 +312,9 @@ Route CentralComputeNode::reconstructPath
                 [
                     subnetToIndexTable[current] //translate name to index
                 ]
-            [
-                subnetToIndexTable[cameFrom[current]] //translate name to index
-            ]
+                [
+                    subnetToIndexTable[cameFrom[current]] //translate name to index
+                ]
             /*/ subnetSpeed[current]*/)); //divide by speed to get cost
         }
         else

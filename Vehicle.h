@@ -26,6 +26,8 @@ class Vehicle : public ThreadSafeObject
 
         bool timeRemainingToNextDestination() const;
 
+        void clearRoute();
+
         bool hasRoute() const;
         bool hasNode(const std::string &node) const;
 

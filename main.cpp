@@ -318,7 +318,6 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
 
 void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle car, long long timeStep) 
 {
-    std::string requestRouteSource;
 
     bool started = false;
 
@@ -397,13 +396,6 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                     {
                         if (car.tryRoadChange(ccn))
                         {
-                            if(requestRouteSource != car.getSource() 
-                                && car.getSource() != car.getDest())
-                            {
-                                car.requestRoute(ccn);
-                                requestRouteSource = car.getSource();
-                            }
-
                             consoleLock.getLock();
                             {
                                 std::cout << "Car " + car.getID() << " has reached " 
@@ -412,15 +404,19 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                             consoleLock.releaseLock();
                             car.setDepartTime();
                         }
+                        else
+                        {
+                            started = false;
+                            car.requestRoute(ccn);
+
+                            car.clearRoute();
+                        }
                     }                    
                     ccn.releaseLock();
                 }                
             }
             else if(!routeRequested)
             {
-
-                requestRouteSource = car.getSource();
-
                 routeRequested = true;
 
                 //request a route
