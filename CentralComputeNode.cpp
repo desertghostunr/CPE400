@@ -125,6 +125,12 @@ void CentralComputeNode::joinNetwork(Vehicle * vehicle)
     vehiclesAtSubnet[vehicle->getSource()].push_front(vehicle->getID());
 }
 
+void CentralComputeNode::leaveNetwork(const std::string &id)
+{
+    vehicles.erase(id);
+    vehiclesAtSubnet.erase(id);
+}
+
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
 {
     if(vehiclesAtSubnet[newRoad].size() < subnetCapacity[newRoad])
