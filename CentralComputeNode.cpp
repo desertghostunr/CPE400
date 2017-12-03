@@ -147,10 +147,10 @@ void CentralComputeNode::joinNetwork(Vehicle * vehicle)
     vehiclesAtSubnet[vehicle->getSource()].push_front(vehicle->getID());
 }
 
-void CentralComputeNode::leaveNetwork(const std::string &id)
+void CentralComputeNode::leaveNetwork(const std::string &id, const std::string &lastNode)
 {
     vehicles.erase(id);
-    vehiclesAtSubnet.erase(id);
+    vehiclesAtSubnet[lastNode].remove(id);
 }
 
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)

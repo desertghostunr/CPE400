@@ -381,7 +381,7 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
 
                     ccn.getLock();
                     {
-                        ccn.leaveNetwork(car.getID());
+                        ccn.leaveNetwork(car.getID(), car.getDest());
                     }
                     ccn.releaseLock();
 

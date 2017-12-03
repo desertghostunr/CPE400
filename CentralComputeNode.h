@@ -36,7 +36,7 @@ public:
     void directTraffic(std::atomic_bool &running);
 
     void joinNetwork(Vehicle* vehicle);
-    void leaveNetwork(const std::string &id);
+    void leaveNetwork(const std::string &id, const std::string &lastNode);
 
     bool changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad);
 
