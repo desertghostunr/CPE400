@@ -8,10 +8,8 @@ bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fS
 
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
-    //subnetSpeed(), 
     subnetCapacity(), 
     vehiclesAtSubnet(), 
-    vechiclesGoingToSubnet(), 
     subnetAdjacencyMatrix(), 
     subnetToIndexTable(),
     jobs()
@@ -49,10 +47,9 @@ void CentralComputeNode::setMap(std::vector<std::vector<double> > & map)
     subnetAdjacencyMatrix = map;
 }
 
-void CentralComputeNode::setSubnetProperties(std::string & name, int capacity/*, double speed*/)
+void CentralComputeNode::setSubnetProperties(std::string & name, int capacity)
 {
     subnetCapacity[name] = capacity;
-    //subnetSpeed[name] = speed;
 }
 
 void CentralComputeNode::queueJob(Job & job)
@@ -71,8 +68,9 @@ void CentralComputeNode::directTraffic()
     Job job;
     Route route;
 
-    int counter;
+    int counter, minCapacity;
     
+    std::list<std::pair<std::string, double> >::iterator pathIter;
 
     if (jobs.empty()) 
     {
@@ -91,7 +89,9 @@ void CentralComputeNode::directTraffic()
 
     jobIter = jobs.begin();
 
-    while (jobIter != jobs.end())
+    counter = 0;
+
+    while (jobIter != jobs.end() && counter < minCapacity)
     {
         job = *jobIter;
 
@@ -100,9 +100,10 @@ void CentralComputeNode::directTraffic()
         {
             if (vehicles[job.id] != NULL)
             {
-                vehicles[job.id]->getLock(); 
+                vehicles[job.id]->getLock();
                 {
-                    vehicles[job.id]->setRoute(route.route); 
+                    vehicles[job.id]->setRoute(route.route);
+                    counter++;
                 }
                 vehicles[job.id]->releaseLock();
 
