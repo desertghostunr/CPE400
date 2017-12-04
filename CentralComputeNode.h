@@ -24,7 +24,7 @@ public:
 
     void buildSubnetToIndexTable(std::vector<std::string> & subnets);
 
-    int getMapIndex(std::string & name);
+    int getMapIndex(const std::string & name);
 
     void setMap(std::vector<std::vector<double> > & map);
 

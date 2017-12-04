@@ -10,13 +10,14 @@
 #include <string>
 #include "ThreadSafeObject.h"
 #include "Vehicle.h"
+#include "Graph.h"
 #include "CentralComputeNode.h"
 
 //the simulator program
 //this runs the simulation to test our SDN protocol
 
 //reads in the input file
-bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
+bool FetchInput(std::string & fileName, CentralComputeNode &ccn, std::vector<Vehicle> & cars);
 
 // end the simulator by joining all threads
 void EndSimulator(std::vector<std::thread> & simulatorThreads);
@@ -102,183 +103,120 @@ int main(int argc, char * argv[])
 }
 
 // Functions ==================================================================
-bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars)
+bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehicle> &cars)
 {
-    std::stringstream strStream;
-    std::fstream fStream;
-
-    std::string buffer;
-    std::string type;
-
-    std::string id, start, dest;
+    std::ifstream inputFile(fileName);
+    std::stringstream arguments;
 
     std::vector<std::string> roadIDs;
+    std::vector<int> roadProp;
     std::vector<std::vector<double> > map;
-
     std::map<std::string, std::map<std::string, int> > cityMap;
 
-    int index, row, col;
+    std::string command, currentKey, value1, value2, value3;
+    int intValue, rowIndex, colIndex;
 
-    double cost, speed;
-
-    int capacity;
-
-    std::cout << "Opening file: " + fileName << "." << std::endl;
-
-    fStream.open(fileName);
-
-    if(!fStream.is_open())
+    if(!inputFile.is_open())
     {
-        std::cout << "Failed to open file: " + fileName << "." << std::endl;
+        std::cout << "ERROR: File is invalid, Terminating program..." << std::endl;
         return false;
     }
 
-    std::cout << "Reading file..." << std::endl;
-
-    // get line and convert it's contents
-    while(std::getline(fStream, buffer))
+    std::cout << "Reading File..." << std::endl;
+    while(!inputFile.eof())
     {
-        strStream.str(buffer); 
+        inputFile >> command;
+        std::getline(inputFile, value1);
 
-        strStream >> type;
-
-        if(type == "car")
-        {            
-            strStream >> id;
-            strStream >> start;
-            strStream >> dest;
-            cars.push_back(Vehicle(id, start, dest));
-
-            std::cout << "Car found: " << id << "." << std::endl;
-        }
-        else if(type == "map")
+        if(command == "car")
         {
-
-            std::cout << "Fetching map."<< std::endl;
-
-            //handle first row
-            if (!std::getline(fStream, buffer))
-            {
-                std::cout << "Error: Expected map row header. Row header not found." << std::endl;
-                return false;
-            }
-            
-            strStream.str(buffer);
-
-            while(strStream >> id)
-            {
-                roadIDs.push_back(id);
-                std::cout << "Road found: " << id << "." << std::endl;
-            }
-
-            //build subnetToIndexTable
-            ccn.buildSubnetToIndexTable(roadIDs);
-
-
-            std::cout << "Initializing map." << std::endl;
-            //alloc temp map
-            map.resize(roadIDs.size());
-
-            for(index = 0; index < map.size(); index++)
-            {
-                map[index].resize(roadIDs.size());
-            }
-
-
-            //initialize map values
-            for(row = 0; row < map.size(); row++)
-            {
-                for (col = 0; col < map[row].size(); col++) 
-                {
-                    if( row == col)
-                    {
-                        map[row][col] = 0;
-                    }
-                    else
-                    {
-                        map[row][col] = -1;
-                    }
-                }
-            }
-
-            std::cout << "Reading in map data." << std::endl;
-
-            //subsequent rows
-            while(true)
-            {                
-                if(!std::getline(fStream, buffer))
-                {
-                    std::cout << "Error: Expected row. Row not found." << std::endl;
-                    return false;
-                }
-
-                strStream.clear();
-                strStream.str(buffer);
-
-                if(!(strStream >> id))
-                {
-                    std::cout << "Error: expected id. ID not found. Found: " << strStream.str() << std::endl;
-                    return false;
-                }
-
-                if(id == "end_map")
-                {
-                    std::cout << "End of Map reached." << std::endl;
-                    break;
-                }
-
-                std::cout << "Fetching row: " << id << "." << std::endl;
-
-                col = 0;
-
-                row = ccn.getMapIndex(id);
-
-                if(row == -1 || row >= map.size())
-                {
-                    std::cout << "Error: Invalid row provided: " << id << "." << std::endl;
-                    return false;
-                }
-
-                while(strStream >> cost)
-                {
-                    if(col > map[row].size())
-                    {
-                        std::cout << "Error: Invalid number of columns found in row: " << id << "." << std::endl;
-                        return false;
-                    }
-
-                    map[row][col] = cost;
-                    col++;
-                }              
-
-            }
-
-            //copy map to ccn
-            ccn.setMap(map);
-            
+            arguments.str(value1);
+            arguments >> value1 >> value2 >> value3;
+            cars.push_back(Vehicle(value1, value2, value3));
+            std::cout << "Car " << value1 << " found." << std::endl;
         }
-        else if (type == "road")
+        else if(command == "intersect")
         {
-            strStream >> id;
-
-            strStream >> capacity;
-
-            //strStream >> speed;
-
-            ccn.setSubnetProperties(id, capacity/*, speed*/);
+            arguments.str(value1);
+            arguments >> currentKey >> intValue;
+            roadIDs.push_back(currentKey);
+            roadProp.push_back(intValue);
+            cityMap[currentKey];
+            std::cout << "Intersection " << currentKey << " found." << std::endl;
+        }
+        else if(command == "neighbor")
+        {   
+            arguments.str(value1);
+            arguments >> value1 >> intValue;
+            cityMap[currentKey].insert(std::pair<std::string, int>(value1, intValue));
+            std::cout << currentKey << " has neighbor " << value1 << "." << std::endl;
+        }
+        else if(command[0] == '#')
+        {
+            std::cout << "Comment" << std::endl;
+            continue;
         }
         else
         {
-            std::cout << "Error: unexpected type: " << type << "." << std::endl;
-            fStream.close();
+            std::cout << "ERROR: Invalid Command " + command << "." << std::endl;
+            inputFile.close();
             return false;
-        }        
+        }
     }
 
-    std::cout << "Finished processing file. Closing file." << std::endl;
+    ccn.buildSubnetToIndexTable(roadIDs);
+    map.resize(roadIDs.size());
+    for(int index = 0 ; index < map.size(); index++)
+    {
+        map[index].resize(roadIDs.size());
+    }
 
-    fStream.close();
-
+    for(int row = 0; row < map.size(); row++)
+    {
+        for(int col = 0; col < map[row].size(); col++)
+        {
+            if(row == col)
+            {
+                map[row][col] = 0;
+            }
+            else
+            {
+                map[row][col] = -1;
+            }
+        }
+    }
+    
+    std::map<std::string, std::map<std::string, int> >::iterator iter = cityMap.begin();
+    std::map<std::string, int>::iterator neighborIter;
+    while(iter != cityMap.end())
+    {
+        rowIndex = ccn.getMapIndex(iter->first);
+        neighborIter = iter->second.begin();
+        while(neighborIter != iter->second.end())
+        {
+            if(neighborIter->first[0] == '[')
+            {
+                std::string neighbor = neighborIter->first;
+                neighbor = roadIDs[std::stoi(neighbor.substr(1, neighbor.size()-2)) - 1];
+                colIndex = ccn.getMapIndex(neighbor);
+            }
+            else
+            {
+                colIndex = ccn.getMapIndex(neighborIter->first);
+            }
+            map[rowIndex][colIndex] = neighborIter->second;
+            neighborIter++;
+        }
+        iter++;
+    }
+    for(int index = 0; index < roadIDs.size(); index++)
+    {
+        ccn.setSubnetProperties(roadIDs[index], roadProp[index]);
+    }
+    ccn.setMap(map);
+    
+    std::cout << "Closing the file." << std::endl;
+    inputFile.close();
     return true;
 }
 
