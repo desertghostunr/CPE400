@@ -245,14 +245,9 @@ bool CentralComputeNode::aStar(Route & route)
                     ]
                     [
                         subnetToIndexTable[neighbors[index]] //translate name to index
-<<<<<<< HEAD
                     ])); 
 
-            if(tentativeGScore > gScore[neighbors[index]])
-=======
-                    ]));
             if(tentativeGScore < gScore[neighbors[index]])
->>>>>>> newinput
             {
                 cameFrom[neighbors[index]] = current;
                 gScore[neighbors[index]] = tentativeGScore;
@@ -266,23 +261,6 @@ bool CentralComputeNode::aStar(Route & route)
                     ] 
                     * (vehiclesAtSubnet[neighbors[index]].size() + vehiclesAtSubnet[current].size());
             }
-<<<<<<< HEAD
-
-            cameFrom[neighbors[index]] = current;
-
-            gScore[neighbors[index]] = tentativeGScore;
-
-            fScore[neighbors[index]] = tentativeGScore 
-                + subnetAdjacencyMatrix //get distance to neighbor from current
-                [
-                    subnetToIndexTable[current] //translate name to index
-                ]
-                [
-                    subnetToIndexTable[neighbors[index]] //translate name to index
-                ] 
-                * (vehiclesAtSubnet[neighbors[index]].size() + vehiclesAtSubnet[current].size());
-=======
->>>>>>> newinput
         }
     }
     return false;
