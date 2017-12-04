@@ -1,21 +1,8 @@
-<<<<<<< HEAD
-car a a c
-car b b c
-car c c a
-car d d c
-map 
-    a   b    c   d
-a   0   5  -1 -1
-b   5 0    3  4
-c   -1 3  0   -1
-d  -1   4  -1   0
-end_map
-road a 2
-road b 2
-road c 2
-road d 2
-=======
 car BMW Longley-Airway Longley-Mccarran
+car Volvo Virginia-Moana Kietzke-Neil
+car Subaru Kietzke-Mccarran Virginia-Longley
+car Honda Virginia-Neil Longley-Mccarran
+
 
 # When adding a new intersection the name of the point is supplied
 # All adjacent nodes to it must follow immediately with the 'neighbor' keyword
@@ -34,6 +21,7 @@ car BMW Longley-Airway Longley-Mccarran
 intersect Virginia-Kietze 4       #1 
 neighbor [2] 25 
 neighbor [3] 15
+neighbor [10] 15
 
 intersect Kietzke-Mccarran 4      #2
 neighbor [5] 20 
@@ -69,4 +57,5 @@ intersect Airway-Mccarran 4       #9
 neighbor [8] 30 
 neighbor [3] 30
 
->>>>>>> newinput
+intersect Virginia-Moana 15
+neighbor [1] 15

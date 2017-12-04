@@ -10,14 +10,13 @@
 #include <string>
 #include "ThreadSafeObject.h"
 #include "Vehicle.h"
-#include "Graph.h"
 #include "CentralComputeNode.h"
 
 //the simulator program
 //this runs the simulation to test our SDN protocol
 
 //reads in the input file
-bool FetchInput(std::string & fileName, CentralComputeNode &ccn, std::vector<Vehicle> & cars);
+bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
 
 // end the simulator by joining all threads
 void EndSimulator(std::vector<std::thread> & simulatorThreads);
