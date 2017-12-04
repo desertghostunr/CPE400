@@ -69,7 +69,7 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
     Job job;
     Route route;
 
-    int counter = 0, minCapacity = _INFINITY;
+    int counter, minCapacity = _INFINITY;
     
     std::list<std::pair<std::string, double> >::iterator pathIter;
 
@@ -103,18 +103,17 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
     {
         if(subnetCapacity[pathIter->first] < minCapacity)
         {
-            counter = (int)vehiclesAtSubnet[pathIter->first].size();
             minCapacity = subnetCapacity[pathIter->first];
         }
     }
-
-    //std::cout << counter << job.start << job.dest << minCapacity << job.id << std::endl;
 
     //for each vehicle that can use the route, send it the route
 
     jobIter = jobs.begin();
 
-    while (jobIter != jobs.end() && counter <= minCapacity)
+    counter = 0;
+
+    while (jobIter != jobs.end() && counter < minCapacity)
     {
         job = *jobIter;
 
@@ -142,6 +141,13 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
 
 }
 
+/**
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
 void CentralComputeNode::joinNetwork(Vehicle * vehicle)
 {
     vehicles[vehicle->getID()] = vehicle;
@@ -163,7 +169,6 @@ bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad,
 
         return true;
     }
-
     return false;
 }
 
@@ -198,20 +203,18 @@ bool CentralComputeNode::aStar(Route & route)
 
     openSet.emplace(route.start);
 
-    gScore[route.start] = 0;    
+    gScore[route.start] = 0;    // total travel time
 
-    while(GetCheapestNode(openSet, fScore, current))
+    while(!openSet.empty())
     {
-
+        GetCheapestNode(openSet, fScore, current);
         if(current == route.dest)
         {
             route = reconstructPath(cameFrom, current, route.start);
-
             return true;
         }
 
         openSet.erase(current);
-
         closedSet.emplace(current);
 
         neighbors = expandNode(current);
@@ -238,35 +241,23 @@ bool CentralComputeNode::aStar(Route & route)
                     ]
                     [
                         subnetToIndexTable[neighbors[index]] //translate name to index
-                    ]
-            /*/ subnetSpeed[current]*/)); //divide by speed to get cost
-
-            //std::cout << "GSCORE: "<<tentativeGScore << std::endl;
-
-            if(tentativeGScore > gScore[neighbors[index]])
+                    ]));
+            if(tentativeGScore < gScore[neighbors[index]])
             {
-                continue;
+                cameFrom[neighbors[index]] = current;
+                gScore[neighbors[index]] = tentativeGScore;
+                fScore[neighbors[index]] = tentativeGScore 
+                    + subnetAdjacencyMatrix //get distance to neighbor from current
+                    [
+                        subnetToIndexTable[current] //translate name to index
+                    ]
+                    [
+                        subnetToIndexTable[neighbors[index]] //translate name to index
+                    ] 
+                    * (vehiclesAtSubnet[neighbors[index]].size() + vehiclesAtSubnet[current].size());
             }
-
-            cameFrom[neighbors[index]] = current;
-
-            gScore[neighbors[index]] = tentativeGScore;
-
-            fScore[neighbors[index]] = tentativeGScore 
-                + subnetAdjacencyMatrix //get distance to neighbor from current
-                [
-                    subnetToIndexTable[current] //translate name to index
-                ]
-                [
-                    subnetToIndexTable[neighbors[index]] //translate name to index
-                ] 
-                * (vehiclesAtSubnet[neighbors[index]].size() + vehiclesAtSubnet[current].size());
-
-                //std::cout << "FSCORE: " << fScore[neighbors[index]] << std::endl;
         }
-
     }
-
     return false;
 }
 
@@ -301,7 +292,7 @@ Route CentralComputeNode::reconstructPath
     {
         cost = 0;
     }
-    //std::cout << "current: " << current << ", " << cost << std::endl;
+    std::cout << "current: " << current << ", " << cost << std::endl;
     route.route.push_front(std::pair<std::string, double>(current, cost));
 
     while (current != start && !current.empty())
@@ -325,7 +316,7 @@ Route CentralComputeNode::reconstructPath
 
         current = cameFrom[current];        
 
-        //std::cout << "current: " << current << ", " << cost << std::endl;
+        std::cout << "current: " << current << ", " << cost << std::endl;
 
         route.route.push_front(std::pair<std::string, double>(current, cost));
     }
