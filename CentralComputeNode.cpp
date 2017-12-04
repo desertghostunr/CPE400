@@ -33,7 +33,7 @@ void CentralComputeNode::buildSubnetToIndexTable(std::vector<std::string> & subn
     }
 }
 
-int CentralComputeNode::getMapIndex(std::string & name)
+int CentralComputeNode::getMapIndex(const std::string & name)
 {
     if(subnetToIndexTable.count(name) < 1)
     {

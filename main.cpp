@@ -109,6 +109,7 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
     std::stringstream arguments;
 
     std::vector<std::string> roadIDs;
+    std::vector<int> roadProp;
     std::vector<std::vector<double> > map;
     std::map<std::string, std::map<std::string, int> > cityMap;
 
@@ -121,6 +122,7 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
         return false;
     }
 
+    std::cout << "Reading File..." << std::endl;
     while(!inputFile.eof())
     {
         inputFile >> command;
@@ -135,10 +137,12 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
         }
         else if(command == "intersect")
         {
-            std::cout << "Intersection " << value1 << " found." << std::endl;
-            currentKey = value1;
-            roadIDs.push_back(value1);
-            cityMap[value1];
+            arguments.str(value1);
+            arguments >> currentKey >> intValue;
+            roadIDs.push_back(currentKey);
+            roadProp.push_back(intValue);
+            cityMap[currentKey];
+            std::cout << "Intersection " << currentKey << " found." << std::endl;
         }
         else if(command == "neighbor")
         {   
@@ -149,11 +153,13 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
         }
         else if(command[0] == '#')
         {
+            std::cout << "Comment" << std::endl;
             continue;
         }
         else
         {
             std::cout << "ERROR: Invalid Command " + command << "." << std::endl;
+            inputFile.close();
             return false;
         }
     }
@@ -188,15 +194,28 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
         neighborIter = iter->second.begin();
         while(neighborIter != iter->second.end())
         {
-            colIndex = ccn.getMapIndex(neighborIter->first);
+            if(neighborIter->first[0] == '[')
+            {
+                std::string neighbor = neighborIter->first;
+                neighbor = roadIDs[std::stoi(neighbor.substr(1, neighbor.size()-2)) - 1];
+                colIndex = ccn.getMapIndex(neighbor);
+            }
+            else
+            {
+                colIndex = ccn.getMapIndex(neighborIter->first);
+            }
             map[rowIndex][colIndex] = neighborIter->second;
             neighborIter++;
         }
         iter++;
     }
-
+    for(int index = 0; index < roadIDs.size(); index++)
+    {
+        ccn.setSubnetProperties(roadIDs[index], roadProp[index]);
+    }
+    ccn.setMap(map);
     
-    std::cout << "Closing the file..." << std::endl;
+    std::cout << "Closing the file." << std::endl;
     inputFile.close();
     return true;
 }
