@@ -1,8 +1,6 @@
 /**
  * @file Vehicle.h
- * 
- * @brief   Definition file for the Vehicle class
- * @details This class is the object that represents all vehicles on the network.
+ * @brief   Definition file for the Vehicle class.
  * 
  * @author  Andrew Frost, Richard Millar
  * @version 1.00
@@ -19,6 +17,13 @@
 
 class CentralComputeNode;
 
+/**
+ * @brief   This class represents the vehicles that make up the network of the SDN.
+ * @details Each Vehicle is able to navigate between nodes from start to finish along a route
+ *          precomputed for it by the Compute Node. 
+ * 
+ * @class   Vehicle Vehicle.h "Vehicle.h"
+ */
 class Vehicle : public ThreadSafeObject
 {
 	public:

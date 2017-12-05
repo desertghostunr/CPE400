@@ -191,6 +191,14 @@ bool FetchInput(const char* fileName, CentralComputeNode &ccn, std::vector<Vehic
 }
 
 
+/**
+ * @brief       Run the simulator until end
+ * @details     Initializes the simulator by launching the vehicle threads and starting
+ *              the compute node.
+ *
+ * @param[in]   ccn         Compute Node of the simulator
+ * @param[in]   vehicles    List of vehicles in the simulator
+ */
 void RunSimulator(CentralComputeNode &ccn, std::vector<Vehicle> &vehicles)
 {
     ThreadSafeObject consoleLock;

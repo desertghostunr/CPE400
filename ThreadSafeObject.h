@@ -1,9 +1,6 @@
 /**
  * @file    ThreadSafeObject.h
- * 
  * @brief   Definition file for the ThreadSafeObject class
- * @details This class is extended by the CentralComputeNode and Vehicle classes
- *          to provide a unique lock and functionality per object.
  * 
  * @author  Andrew Frost, Richard Millar
  * @version 1.00
@@ -15,6 +12,15 @@
 
 using Lock = std::unique_lock<std::mutex>;
 
+
+/**
+ * @brief   The ThreadSafeObject class is inherited by others to allow for objects
+ *          to lock their resources between threads.
+ * @details This class provides two methods, one to lock the resource, and one to
+ *          release it.
+ * 
+ * @class   ThreadSafeObject ThreadSafeObject.h "ThreadSafeObject.h"
+ */
 class ThreadSafeObject 
 {
 public:

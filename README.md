@@ -1,9 +1,7 @@
 # CPE400
 A repository for the CPE400 Networking Programming Project
 
-## Building and Running
-
-### Building and Running on Linux
+## Building and Running on Linux
 
 Building:
 
@@ -22,8 +20,8 @@ Cleaning:
 ```bash
 make clean
 ```
-
-## Vehicles
+### Network Structure
+### Vehicles
 Each vehicle on the network is an abstraction of a network packet. This allows each one to hold and share only basic information, such as identification, source, and destination addresses. The majority of routing of these packets is therefore completed by the intersection routers. The amount of time spend between each node is recorded by the packet, which is then read by the router and passed to the central device. This information helps the Central Node determine wait times at each individual node; this in turn allows it to scale and reroute packets accordingly.
 
 
@@ -64,7 +62,7 @@ Class Vehicle:
 		* Route Requested
 		* mutex
 
-## Central Compute Node
+### Central Compute Node
 The central compute node is responsible for routing all traffic.
 
 Class CentralComputeNode:
@@ -101,4 +99,23 @@ Class CentralComputeNode:
 		* mutex
 
 ## Input Structure
-* Please see the Input.txt for notes on the input structure.
+The structure of the input file is fairly straight forward. Each object on the network has its own keyword that is recognized by the program:
+
+* Car:
+
+    * This keyword is used to specify a vehicle on the network.
+    * car car-name source destination
+* Intersect:
+
+    * The intersection command specified a node within the network.
+    * The command must contain an intersect name, as well as the maximum capacity of the node.
+    * intersect intersect-name capacity
+
+* Neighbor:
+    
+    * The neighbor keyword details a neighbor node to the preceding intersect.
+    * The referenced neighbor node can be detailed either through a direct reference to the object, or by its index.
+    * Along with a reference to the neighbor node, the length of time between the nodes must also be specified.
+    * neighbor [node-index]|node-title timespan
+
+The input file also allows for the use of comments, which begin with '#' at the beginning of the comment.
