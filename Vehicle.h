@@ -1,3 +1,13 @@
+/**
+ * @file Vehicle.h
+ * 
+ * @brief   Definition file for the Vehicle class
+ * @details This class is the object that represents all vehicles on the network.
+ * 
+ * @author  Andrew Frost, Richard Millar
+ * @version 1.00
+ */
+
 #ifndef VEHICLE_H
 #define VEHICLE_H
 

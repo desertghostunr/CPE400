@@ -1,3 +1,13 @@
+/**
+ * @file CentralComputeNode.cpp
+ * 
+ * @brief Implementation file for the CentralComputeNode class
+ * 
+ * @author  Andrew Frost, Richard Millar
+ * @version 1.00
+ */
+
+// Header Files ===============================================================
 #include "CentralComputeNode.h"
 #include <atomic>
 
@@ -6,6 +16,12 @@
 template<typename Type>
 bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fScore, Type & lowest);
 
+
+/**
+ * @brief   Default constructor.
+ * @details Constructs an empty CentralComputeNode object
+ * @note    None
+ */
 CentralComputeNode::CentralComputeNode()
     : vehicles(), 
     subnetCapacity(), 
@@ -17,11 +33,25 @@ CentralComputeNode::CentralComputeNode()
 
 }
 
+/**
+ * @brief   Default destructor.
+ * @details Destroys a CentralComputeNode object
+ * @note    None
+ */
 CentralComputeNode::~CentralComputeNode() 
 {
    
 }
 
+
+/**
+ * @brief       Populates the subnetToIndexTable. 
+ * @details     Associates an index value to each subnet ID.
+ * 
+ * @param[in]   subnets Vector of subnet IDS to assign
+ * 
+ * @note        None
+ */
 void CentralComputeNode::buildSubnetToIndexTable(std::vector<std::string> & subnets)
 {
     int index;
@@ -32,6 +62,14 @@ void CentralComputeNode::buildSubnetToIndexTable(std::vector<std::string> & subn
     }
 }
 
+/**
+ * @brief       Returns index of ID
+ * @details     Gets and returns the associated index to the ID provided
+ * 
+ * @param[in]   name    ID to be searched for
+ * 
+ * @note        None
+ */
 int CentralComputeNode::getMapIndex(const std::string & name)
 {
     if(subnetToIndexTable.count(name) < 1)
@@ -42,26 +80,73 @@ int CentralComputeNode::getMapIndex(const std::string & name)
     return subnetToIndexTable[name];
 }
 
+
+/**
+ * @brief       Assign new map to object
+ * @details     Set a new city map within the object
+ * @param[in]   map     vector of vector of doubles that detail the distance from 
+ *                      each node in the map
+ * 
+ * @note        None
+ */
 void CentralComputeNode::setMap(std::vector<std::vector<double> > & map)
 {
     subnetAdjacencyMatrix = map;
 }
 
+
+/**
+ * @brief       Assign properties to submet
+ * @details     Sets the subnet capacity specified by name
+ * 
+ * @param[in]   name        ID to be searched for
+ * @param[in]   capacity    capacity of the subnet to assign
+ * 
+ * @note        None
+ */
 void CentralComputeNode::setSubnetProperties(std::string & name, int capacity)
 {
     subnetCapacity[name] = capacity;
 }
 
+
+/**
+ * @brief       Adds a new job
+ * @details     Appends a new job to the end of the queue
+ * 
+ * @param[in]   job     job to be appended
+ * 
+ * @note        None
+ */
 void CentralComputeNode::queueJob(Job & job)
 {
     jobs.push_back(job);
 }
 
+
+/**
+ * @brief       Computes route
+ * @details     Computes the best route from start to end, and returns it
+ * 
+ * @param[out]  route   route to be computed and returned
+ * 
+ * @note        None
+ */
 bool CentralComputeNode::computeRoute(Route & route) 
 {
     return aStar(route);
 }
 
+
+/**
+ * @brief       Process waiting jobs for routes
+ * @details     Processes all pending jobs in the queue, and if there are no vehicles
+ *              present on the network, end the simulator.
+ * 
+ * @param[out]  running    boolean to determine whether the simulator is still
+ *                          running.
+ * @note        None
+ */
 void CentralComputeNode::directTraffic(std::atomic_bool &running)
 {
     std::list<Job>::iterator jobIter;
@@ -72,19 +157,19 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
     
     std::list<std::pair<std::string, double> >::iterator pathIter;
 
-
+    // If there are no more vehicles in the network
     if (vehicles.empty())
     {
         running = false;
         return;
     }
-
+    // If there are no jobs to be run
     if (jobs.empty())
     {
         return;
     }
 
-    //fetch a job
+    //fetch the first job
     job = jobs.front();
 
     route.start = job.start;
@@ -139,18 +224,49 @@ void CentralComputeNode::directTraffic(std::atomic_bool &running)
 
 }
 
+
+/**
+ * @brief       Add vehicle to network
+ * @details     Appends vehicle to the vehicle map
+ * 
+ * @param[in]   vehicle     Vehicle to add to the network
+ * 
+ * @note        None
+ */
 void CentralComputeNode::joinNetwork(Vehicle * vehicle)
 {
     vehicles[vehicle->getID()] = vehicle;
     vehiclesAtSubnet[vehicle->getSource()].emplace(vehicle->getID());
 }
 
+
+/**
+ * @brief       Allow Vehicle to leave network
+ * @details     Removes vehicle ID from network
+ * 
+ * @param[in]   id          ID of vehicle to remove
+ * @param[in]   lastNode    last known node vehicle is at
+ * 
+ * @note        None
+ */
 void CentralComputeNode::leaveNetwork(const std::string &id, const std::string &lastNode)
 {
     vehicles.erase(id);
     vehiclesAtSubnet[lastNode].erase(id);
 }
 
+
+/**
+ * @brief       Changes current road of vehicle
+ * @details     Determines whether to allow Vehicle to change road, and if so, update
+ *              vehicle location and count, else return false
+ * 
+ * @param[in]   id          vehicle ID
+ * @param[in]   currentRoad road vehicle is currently on
+ * @param[in]   newRoad     road vehicle is requesting to switch to
+ * 
+ * @note        None
+ */
 bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad, std::string & newRoad)
 {
     if (currentRoad == newRoad)
@@ -169,6 +285,16 @@ bool CentralComputeNode::changeRoad(std::string & id, std::string & currentRoad,
     return false;
 }
 
+
+/**
+ * @brief       A* Search Algorithm
+ * @details     Computes a route based on the starting and end nodes using the A*
+ *              Search algorithm
+ * 
+ * @param[out]  route   route to be computed and returned   
+ * 
+ * @note        None
+ */
 bool CentralComputeNode::aStar(Route & route)
 {
     std::unordered_set<std::string> closedSet, openSet;
@@ -267,6 +393,18 @@ bool CentralComputeNode::aStar(Route & route)
     return false;
 }
 
+
+/**
+ * @brief       Constructs route between nodes
+ * @details     Moves through the cameFrom list and builds a route between current and
+ *              Start node
+ * 
+ * @param[in]   cameFrom  List of nodes and their parents
+ * @param[in]   current   Current node
+ * @param[in]   start     Start node
+ * 
+ * @note    None
+ */
 Route CentralComputeNode::reconstructPath
 (
     std::map<std::string, std::string> & cameFrom,
@@ -327,6 +465,15 @@ Route CentralComputeNode::reconstructPath
     return route;
 }
 
+
+/**
+ * @brief       Expands specified node
+ * @details     Looks at all neighbors of the specified node
+ * 
+ * @param[in]   current current node to look at the neighbors for
+ * 
+ * @note        None
+ */
 std::vector<std::string> CentralComputeNode::expandNode(std::string current)
 {
     std::map<std::string, int>::iterator iter;
@@ -350,20 +497,54 @@ std::vector<std::string> CentralComputeNode::expandNode(std::string current)
     return neighbors;
 }
 
+
+/**
+ * @brief   Default job constructor
+ * @details Constructs a job object
+ * @note    None
+ */
 Job::Job() : start(""), dest(""), id("")
 {
 
 }
 
+/**
+ * @brief   Default job desructor
+ * @details Destroys job object
+ * @note    None
+ */
 Job::~Job() {}
 
+
+/**
+ * @brief   Route default constructor
+ * @details Initializes route object
+ * @note    None
+ */
 Route::Route() : start(""), dest(""), route()
 {
 
 }
 
+
+/**
+ * @brief   Default route destructor
+ * @details Destroys route object
+ * @note    None
+ */
 Route::~Route() {}
 
+
+/**
+ * @brief       Finds the cheapest node
+ * @details     Scans the opened set to find the least f-score node.
+ * 
+ * @param[in]   set     set to be scanned for node
+ * @param[in]   fScore  map of node IDs and associated f-scores
+ * @param[out]  lowest  Cheapest node found
+ *
+ * @note        None
+ */
 template<typename Type>
 bool GetCheapestNode(std::unordered_set<Type> & set, std::map<Type, double> & fScore, Type & lowest)
 {

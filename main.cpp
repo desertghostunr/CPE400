@@ -1,3 +1,15 @@
+/**
+ * @file    main.cpp
+ * 
+ * @brief   Main processing file for the Software Defined Network simulator
+ * @details Takes in user input file and starts the simulator, processing each
+ *          vehicle route until all are finished
+ * 
+ * @author  Andrew Frost, Richard Millar
+ * @version 1.00
+ */
+
+// Header Files ===============================================================
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -12,26 +24,16 @@
 #include "Vehicle.h"
 #include "CentralComputeNode.h"
 
-//the simulator program
-//this runs the simulation to test our SDN protocol
-
-//reads in the input file
+// Function Prototypes ========================================================
 bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
-
-// end the simulator by joining all threads
 void EndSimulator(std::vector<std::thread> & simulatorThreads);
-
-//function that runs the compute node in another thread
 void WaitFor(long long timeMS); 
-
-//function that runs the compute node in another thread
 void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock);
-
-//function that runs a car in another thread
 void Car(CentralComputeNode & ccn, std::atomic_bool & running, 
          ThreadSafeObject & consoleLock, Vehicle car, long long timeStep);
 
 
+// Main Function ==============================================================
 int main(int argc, char * argv[])
 {
     CentralComputeNode ccn;
@@ -102,6 +104,14 @@ int main(int argc, char * argv[])
 }
 
 // Functions ==================================================================
+/**
+ * @brief       Process input file
+ * @details     Parses out input file and places the data into the compute node
+ * 
+ * @param[in]   fileName    file to parse
+ * @param[in]   ccn         Central node
+ * @param[in]   cars        List of vehicles
+ */
 bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehicle> &cars)
 {
     std::ifstream inputFile(fileName);
@@ -112,29 +122,34 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
     std::vector<std::vector<double> > map;
     std::map<std::string, std::map<std::string, int> > cityMap;
 
+    std::map<std::string, std::map<std::string, int> >::iterator cityIter;
+    std::map<std::string, int>::iterator neighborIter;
+
     std::string command, currentKey, value1, value2, value3;
     int intValue, rowIndex, colIndex;
 
-    if(!inputFile.is_open())
+    if(!inputFile.is_open())    //----- If the input file was not opened end
     {
         std::cout << "ERROR: File is invalid, Terminating program..." << std::endl;
         return false;
     }
 
     std::cout << "Reading File..." << std::endl;
+
+    // Begin processing the file
     while(!inputFile.eof())
     {
-        inputFile >> command;
-        std::getline(inputFile, value1);
+        inputFile >> command;   // Read the first block of text into command
+        std::getline(inputFile, value1);    // read in the rest of the line
 
-        if(command == "car")
+        if(command == "car")    //---- If the command is for a car
         {
             arguments.str(value1);
             arguments >> value1 >> value2 >> value3;
             cars.push_back(Vehicle(value1, value2, value3));
             std::cout << "Car " << value1 << " found." << std::endl;
         }
-        else if(command == "intersect")
+        else if(command == "intersect") //--- If the command is for an intersection
         {
             arguments.str(value1);
             arguments >> currentKey >> intValue;
@@ -143,33 +158,33 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
             cityMap[currentKey];
             std::cout << "Intersection " << currentKey << " found." << std::endl;
         }
-        else if(command == "neighbor")
+        else if(command == "neighbor")  //---- If the command is for a neighbor
         {   
             arguments.str(value1);
             arguments >> value1 >> intValue;
             cityMap[currentKey].insert(std::pair<std::string, int>(value1, intValue));
-            std::cout << currentKey << " has neighbor " << value1 << "." << std::endl;
         }
-        else if(command[0] == '#')
+        else if(command[0] == '#')  //---- If the command is a comment
         {
-            std::cout << "Comment" << std::endl;
             continue;
         }
-        else
+        else    //---- If the command is not recognized
         {
             std::cout << "ERROR: Invalid Command " + command << "." << std::endl;
             inputFile.close();
             return false;
         }
     }
-
     ccn.buildSubnetToIndexTable(roadIDs);
     map.resize(roadIDs.size());
+
+    // Resize the map to the number of subnets
     for(int index = 0 ; index < map.size(); index++)
     {
         map[index].resize(roadIDs.size());
     }
 
+    // initialize the map values
     for(int row = 0; row < map.size(); row++)
     {
         for(int col = 0; col < map[row].size(); col++)
@@ -185,15 +200,15 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
         }
     }
     
-    std::map<std::string, std::map<std::string, int> >::iterator iter = cityMap.begin();
-    std::map<std::string, int>::iterator neighborIter;
-    while(iter != cityMap.end())
+    // for each subnet found
+    for(cityIter = cityMap.begin(); cityIter != cityMap.end(); cityIter++)
     {
-        rowIndex = ccn.getMapIndex(iter->first);
-        neighborIter = iter->second.begin();
-        while(neighborIter != iter->second.end())
+        rowIndex = ccn.getMapIndex(cityIter->first);    //---- set the row to the subnet index
+
+        // Iterate through the neighbors
+        for(neighborIter = cityIter->second.begin(); neighborIter != cityIter->second.end(); neighborIter++)
         {
-            if(neighborIter->first[0] == '[')
+            if(neighborIter->first[0] == '[')   //---- If the neighbor is referenced by index
             {
                 std::string neighbor = neighborIter->first;
                 neighbor = roadIDs[std::stoi(neighbor.substr(1, neighbor.size()-2)) - 1];
@@ -204,10 +219,10 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
                 colIndex = ccn.getMapIndex(neighborIter->first);
             }
             map[rowIndex][colIndex] = neighborIter->second;
-            neighborIter++;
         }
-        iter++;
     }
+
+    // Set each subnet capacity
     for(int index = 0; index < roadIDs.size(); index++)
     {
         ccn.setSubnetProperties(roadIDs[index], roadProp[index]);
@@ -219,22 +234,39 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
     return true;
 }
 
+/**
+ * @brief       End the simulator
+ * @details     Wait for each thread to join
+ * @param[in]   simulatorThreads    list of threads
+ */
 void EndSimulator(std::vector<std::thread> & simulatorThreads)
 {
-    int index;
-
-    for (index = 0; index < simulatorThreads.size(); index++) 
+    for (int index = 0; index < simulatorThreads.size(); index++) 
     {
         simulatorThreads[index].join();
     }
 }
 
+
+/**
+ * @brief       Wait for a specified time
+ * @details     puts the current thread to sleep
+ * 
+ * @param[in]   timeMS  time period to wait in milliseconds
+ */
 void WaitFor(long long timeMS)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(timeMS));
 }
 
-
+/**
+ * @brief       Begins the compute node processing
+ * @details     Runs the compute node and checks for open jobs periodically
+ *    
+ * @param[in]   ccn         Main compute node of simulator
+ * @param[in]   running     flag to show that the simulator is running
+ * @param[in]   consoleLock Lock assigned to the console for output
+ */
 void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock)
 {
     consoleLock.getLock();
@@ -253,6 +285,18 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
     }
 }
 
+
+/**
+ * @brief       Operations done by each Vehicle object
+ * @details     This function runs the car and all its operations. 
+ *              
+ * 
+ * @param[in]   ccn         central compute node
+ * @param[in]   running     flag to show simulator is running
+ * @param[in]   consoleLock lock for the console output
+ * @param[in]   car         main thread object
+ * @param[in]   timeStep    
+ */
 void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle car, long long timeStep) 
 {
 
@@ -278,12 +322,14 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
     }
     car.releaseLock();
 
+    // Join central network
     ccn.getLock();
     {
         ccn.joinNetwork(&car);
     }
     ccn.releaseLock();
 
+    // While the simulator is running
     while (running) 
     {
         car.getLock();
@@ -330,11 +376,12 @@ void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject 
                     return;
                 }
                 
+                // If the car is at a node
                 if(!car.timeRemainingToNextDestination())
                 {
                     ccn.getLock();
                     {
-                        if (car.tryRoadChange(ccn))
+                        if (car.tryRoadChange(ccn)) //--- Try road change
                         {
                             consoleLock.getLock();
                             {

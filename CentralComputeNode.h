@@ -1,8 +1,21 @@
+/**
+ * @file    CentralComputeNode.h
+ * 
+ * @brief   Definition file for the CentralComputeNode class
+ * @details The CentralComputeNode class is the central computer of the network.
+ *          It manages all incoming requests to it, and updates routes according 
+ *          to network conditions.
+ * 
+ * @author  Andrew Frost, Richard Millar
+ * @version 1.00
+ */
+
+// Precompiler Directives =====================================================
 #ifndef CENTRALCOMPUTENODE_H
 #define CENTRALCOMPUTENODE_H
 
+// Header Files ===============================================================
 #include <unordered_set>
-
 #include <vector>
 #include <list>
 #include <map>
@@ -15,6 +28,7 @@ struct Job;
 struct Route;
 class Vehicle;
 
+// Class Definition ===========================================================
 class CentralComputeNode : public ThreadSafeObject
 {
     
