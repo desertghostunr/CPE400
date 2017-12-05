@@ -1,6 +1,28 @@
 # CPE400
 A repository for the CPE400 Networking Programming Project
 
+## Building and Running
+
+### Building and Running on Linux
+
+Building:
+
+```bash
+make
+```
+
+Running:
+
+```bash
+./SDN Input.txt
+```
+
+Cleaning:
+
+```bash
+make clean
+```
+
 ## Vehicles
 Each vehicle on the network is an abstraction of a network packet. This allows each one to hold and share only basic information, such as identification, source, and destination addresses. The majority of routing of these packets is therefore completed by the intersection routers. The amount of time spend between each node is recorded by the packet, which is then read by the router and passed to the central device. This information helps the Central Node determine wait times at each individual node; this in turn allows it to scale and reroute packets accordingly.
 
@@ -10,19 +32,24 @@ Class Vehicle:
 	* Methods:
 
 		* Constructor
+		* Parameterized Constructor
 		* Destructor
-		* Set Leave Time
-		* Compute Time elapsed
-		* Get Destination Address
-
+		* Set Start Time
+		* Set Depart Time
+		* Get Travel Time
+		* Get Total Time
+		* Get Next Destination
+		* Time Remaining To Next Destination
+		* Clear Route
+		* Has Route
+		* Has Node
+		* Get ID
+		* Get Source
+		* Get Dest
 		* Request Route
-
 		* Set Route
-
-		* Notify Road Change
-
+		* Try Road Change
 		* Get Lock
-
 		* Release Lock
 
 	* Properties:
@@ -30,10 +57,11 @@ Class Vehicle:
 		* Device id
 		* Source address
 		* Dest address
-		* Time leave node (UTC)
-
+		* Travel Time
+		* Total Time
+		* Travel Time Left
 		* Route (a list of subnets to traverse)
-
+		* Route Requested
 		* mutex
 
 ## Central Compute Node
@@ -45,37 +73,32 @@ Class CentralComputeNode:
 
 		* Constructor
 		* Destructor
+		* Build Subnet To Index Table
+		* Get Map Index
+		* Set Map
+		* Set Subnet Properties
 		* Queue Job
 		* Compute Route
 		* Direct Traffic
 		* Join Network
+		* Leave Network
+		* Change Road
 		* Get Lock
 		* Release Lock
+		* AStar
+		* Reconstruct Path
+		* Expand Node
 
 	* Properties:
 
 		* Vehicle ID to Vehicle Object (the abstracted "route" to that vehicle)
-		* Subnet Speed
 		* Subnet Capacity
 		* Vehicles at each subnet (map)
-		* Vehicles going to each subnet (map)
 		* City Map (adjacency matrix)
+		* Subnet To Index Table
 		* Jobs (a queue of routes to be computed)
 
 		* mutex
 
 ## Input Structure
-*Note: a -1 denotes not neighbors, 0 reserved for the same road
-*note: [d] = delta time in seconds, [c] = capacity
-
-### start of file:
-car [id] [start] [stop]
-
-map
-	[id] [id] [id]
-[id]  0   [d]   -1
-[id] [d]  0    [d]
-[id] -1   [d]  0
-end_map
-
-road [id] [c]
+* Please see the Input.txt for notes on the input structure.
