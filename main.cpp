@@ -25,7 +25,9 @@
 #include "CentralComputeNode.h"
 
 // Function Prototypes ========================================================
-bool FetchInput(std::string & fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
+bool FetchInput(const char* fileName, CentralComputeNode & ccn, std::vector<Vehicle> & cars);
+
+void RunSimulator(CentralComputeNode &ccn, std::vector<Vehicle> &vehicles);
 void EndSimulator(std::vector<std::thread> & simulatorThreads);
 void WaitFor(long long timeMS); 
 void ComputeNode(CentralComputeNode& ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock);
@@ -38,17 +40,6 @@ int main(int argc, char * argv[])
 {
     CentralComputeNode ccn;
     std::vector<Vehicle> vehicles;
-    std::vector<std::thread> simulatorThreads;
-    std::string fileName;
-
-    std::atomic_bool running(true);
-
-    ThreadSafeObject consoleLock;
-
-    long long tStep = 0;
-    int index;
-
-    int c;
 
     //take input
     if(argc < 2)
@@ -57,49 +48,14 @@ int main(int argc, char * argv[])
         return -1;
     }
 
-    fileName = argv[1];
-
     std::cout << "Reading in simulation data." << std::endl;
-
-    if(!FetchInput(fileName, ccn, vehicles))
+    if(!FetchInput(argv[1], ccn, vehicles))
     {
         std::cout << "Error: invalid file name or contents. Terminating early." << std::endl;
         return -1;
     }
 
-    //start sim in another thread
-    simulatorThreads.resize(vehicles.size());
-    
-
-    std::cout << "Starting the simulator." << std::endl << std::endl;
-
-    //initialize and start the compute node
-
-    srand((unsigned)time(0));
-
-    //initialize and start the cars
-    for (index = 0; index < simulatorThreads.size(); index++)
-    {
-        tStep = (rand() % 1500) + 250;
-        simulatorThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), 
-                                              std::ref(consoleLock), std::ref(vehicles[index]), tStep);
-    }
-
-    WaitFor(2000);
-
-    ComputeNode(ccn, std::ref(running), std::ref(consoleLock));
-
-    consoleLock.getLock(); 
-    {
-        std::cout << "Terminating the simulator." << std::endl << std::endl;
-    }
-    consoleLock.releaseLock();
-
-    EndSimulator(simulatorThreads);
-    
-    std::cout << "Simulator terminated." << std::endl;
-
-
+    RunSimulator(ccn, vehicles);
     return 0;
 }
 
@@ -112,7 +68,7 @@ int main(int argc, char * argv[])
  * @param[in]   ccn         Central node
  * @param[in]   cars        List of vehicles
  */
-bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehicle> &cars)
+bool FetchInput(const char* fileName, CentralComputeNode &ccn, std::vector<Vehicle> &cars)
 {
     std::ifstream inputFile(fileName);
     std::stringstream arguments;
@@ -234,6 +190,32 @@ bool FetchInput(std::string &fileName, CentralComputeNode &ccn, std::vector<Vehi
     return true;
 }
 
+
+void RunSimulator(CentralComputeNode &ccn, std::vector<Vehicle> &vehicles)
+{
+    ThreadSafeObject consoleLock;
+    std::atomic_bool running(true);
+    std::vector<std::thread> vehicleThreads(vehicles.size());
+
+    long long tStep;
+
+    std::cout << "Starting the simulator..." << std::endl;
+    srand((unsigned)time(0));
+    for(int index = 0; index < vehicleThreads.size(); index++)
+    {
+        tStep = (rand() % 1500) + 250;
+        vehicleThreads[index] = std::thread(Car, std::ref(ccn), std::ref(running), std::ref(consoleLock),
+                                            std::ref(vehicles[index]), tStep);
+    }
+
+    WaitFor(2000);
+    ComputeNode(ccn, std::ref(running), std::ref(consoleLock));
+
+    std::cout << "Ending the simulator..." << std::endl;
+    EndSimulator(vehicleThreads);
+    std::cout << "Simulator Terminated." << std::endl;
+}
+
 /**
  * @brief       End the simulator
  * @details     Wait for each thread to join
@@ -295,13 +277,12 @@ void ComputeNode(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSaf
  * @param[in]   running     flag to show simulator is running
  * @param[in]   consoleLock lock for the console output
  * @param[in]   car         main thread object
- * @param[in]   timeStep    
+ * @param[in]   timeStep    time from beginning of sim to start of car
  */
 void Car(CentralComputeNode & ccn, std::atomic_bool & running, ThreadSafeObject & consoleLock, Vehicle car, long long timeStep) 
 {
 
     bool started = false;
-
     bool routeRequested = false;
 
     consoleLock.getLock();
