@@ -2,7 +2,10 @@ car BMW Longley-Airway Longley-Mccarran
 car Volvo Virginia-Moana Kietzke-Neil
 car Subaru Kietzke-Mccarran Virginia-Longley
 car Honda Virginia-Neil Longley-Mccarran
-
+car Saab Longley-Airway Longley-Mccarran
+car VW Virginia-Moana Kietzke-Neil
+car Hyundai Kietzke-Mccarran Virginia-Longley
+car Mitsubishi Virginia-Neil Longley-Mccarran
 
 # When adding a new intersection the name of the point is supplied
 # All adjacent nodes to it must follow immediately with the 'neighbor' keyword
