@@ -4,8 +4,10 @@ car Subaru Kietzke-Mccarran Virginia-Longley
 car Honda Virginia-Neil Longley-Mccarran
 car Saab Longley-Airway Longley-Mccarran
 car VW Virginia-Moana Kietzke-Neil
-car Hyundai Kietzke-Mccarran Virginia-Longley
-car Mitsubishi Virginia-Neil Longley-Mccarran
+car Toyota Virginia-Moana Kietzke-Mccarran
+car Ford Kietzke-Mccarran Virginia-Longley
+car Hyundai Kietzke-Mccarran Longley-Mccarran
+car Mitsubishi Virginia-Neil Virginia-Longley
 
 # When adding a new intersection the name of the point is supplied
 # All adjacent nodes to it must follow immediately with the 'neighbor' keyword
@@ -21,7 +23,7 @@ car Mitsubishi Virginia-Neil Longley-Mccarran
 # intersect b
 #intersect c
 
-intersect Virginia-Kietze 4       #1 
+intersect Virginia-Kietze 2       #1 
 neighbor [2] 25 
 neighbor [3] 15
 neighbor [10] 15
